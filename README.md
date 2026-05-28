@@ -31,7 +31,7 @@ All commands are verified against official tool documentation. Works completely 
 
 ## How to Use
 
-1. Open `https://pages.github.ibm.com/pbhide57/RedForge/index.html` in any modern browser
+1. Open `https://imrooting.github.io/RedForge/index.html` in any modern browser
 2. Fill in your credentials and targets in the top panel (username, password/hash, domain, DC IP, target, LHOST/LPORT)
 3. Select a tool from the left sidebar
 4. Pick a module/attack type
